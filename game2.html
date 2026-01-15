@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>終極井字過三關 (Ultimate Tic-Tac-Toe)</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --grid-color: #333;
+            --cell-bg: #fff;
+            --hover-bg: #e3f2fd;
+            --active-board-bg: #fff9c4; /* 黃色高亮提示當前可下的小棋盤 */
+            --player-x-color: #e74c3c;
+            --player-o-color: #3498db;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 大棋盤容器 */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            background-color: var(--grid-color);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        /* 小棋盤 (每個大格) */
+        .small-board {
+            background-color: var(--cell-bg);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            padding: 2px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        /* 當前必須下子的小棋盤高亮 */
+        .small-board.active {
+            background-color: var(--active-board-bg);
+            box-shadow: inset 0 0 0 3px #f1c40f;
+        }
+
+        /* 已經贏得的小棋盤樣式 */
+        .small-board.won::after {
+            content: attr(data-winner);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.85);
+            color: var(--grid-color);
+            z-index: 10;
+        }
+        
+        .small-board.won[data-winner="X"]::after { color: var(--player-x-color); }
+        .small-board.won[data-winner="O"]::after { color: var(--player-o-color); }
+
+        /* 具體的格子 */
+        .cell {
+            background-color: var(--cell-bg);
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            user-select: none;
+            aspect-ratio: 1;
+        }
+
+        /* 只有在活躍棋盤且該格為空時才有 hover 效果 */
+        .small-board.active .cell:empty:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* 棋子顏色 */
+        .cell.X { color: var(--player-x-color); }
+        .cell.O { color: var(--player-o-color); }
+
+        /* 遊戲結束遮罩 */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .overlay h2 { font-size: 3rem; margin-bottom: 20px; }
+        
+        button.restart-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        button.restart-btn:hover { transform: scale(1.05); background-color: #27ae60; }
+
+        .rules {
+            margin-top: 20px;
+            max-width: 600px;
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* 手機適配 */
+        @media (max-width: 500px) {
+            .game-board { gap: 5px; padding: 5px; }
+            .small-board { gap: 1px; }
+            .cell { font-size: 1rem; }
+            .small-board.won::after { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>終極井字過三關</h1>
+    
+    <div class="status" id="status">當前玩家: <span style="color:var(--player-x-color)">X</span></div>
+
+    <div class="game-board" id="gameBoard">
+        <!-- JS 會在這裡生成 9 個小棋盤 -->
+    </div>
+
+    <div class="rules">
+        <strong>玩法說明：</strong><br>
+        1. 棋盤為 3x3 的大格，每大格內有 3x3 的小格。<br>
+        2. 你在小格的下子位置，決定了對手必須在哪個大格下子 (黃色高亮區域)。<br>
+        3. 如果被指派的大格已被佔領或已滿，則可以在任意大格下子。<br>
+        4. 贏得 3 個連成一線的大格即獲勝。
+    </div>
+
+    <div class="overlay" id="overlay">
+        <h2 id="winnerText">X 獲勝!</h2>
+        <button class="restart-btn" onclick="initGame()">重新開始</button>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const statusDisplay = document.getElementById('status');
+        const overlay = document.getElementById('overlay');
+        const winnerText = document.getElementById('winnerText');
+
+        let bigBoard = []; // 存儲大棋盤狀態 (null, 'X', 'O', 'DRAW')
+        let smallBoards = []; // 存儲 9 個小棋盤的詳細格子
+        let currentPlayer = 'X';
+        let nextBoardIndex = null; // 下一步必須下的大格索引 (null 代表任意)
+        let gameActive = true;
+
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // 橫向
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縱向
+            [0, 4, 8], [2, 4, 6]             // 斜向
+        ];
+
+        // 初始化遊戲
+        function initGame() {
+            gameBoard.innerHTML = '';
+            bigBoard = Array(9).fill(null);
+            smallBoards = Array(9).fill(null).map(() => Array(9).fill(null));
+            currentPlayer = 'X';
+            nextBoardIndex = null;
+            gameActive = true;
+            overlay.classList.remove('show');
+            
+            renderBoard();
+            updateStatus();
+        }
+
+        // 渲染棋盤
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const smallBoardDiv = document.createElement('div');
+                smallBoardDiv.classList.add('small-board');
+                smallBoardDiv.dataset.index = i;
+
+                // 檢查是否應該高亮 (是下一手指定位置 且 該大格未結束)
+                if (gameActive && !bigBoard[i] && (nextBoardIndex === null || nextBoardIndex === i)) {
+                    smallBoardDiv.classList.add('active');
+                }
+
+                // 如果大格已贏，顯示贏家
+                if (bigBoard[i]) {
+                    smallBoardDiv.classList.add('won');
+                    smallBoardDiv.setAttribute('data-winner', bigBoard[i] === 'DRAW' ? '-' : bigBoard[i]);
+                }
+
+                // 生成小格
+                for (let j = 0; j < 9; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    if (smallBoards[i][j]) {
+                        cell.textContent = smallBoards[i][j];
+                        cell.classList.add(smallBoards[i][j]);
+                    }
+                    // 綁定點擊事件
+                    cell.addEventListener('click', () => handleMove(i, j));
+                    smallBoardDiv.appendChild(cell);
+                }
+                gameBoard.appendChild(smallBoardDiv);
+            }
+        }
+
+        // 處理點擊
+        function handleMove(boardIndex, cellIndex) {
+            if (!gameActive) return;
+
+            // 規則校驗：
+            // 1. 必須在指定的大格下子 (除非 nextBoardIndex 為 null)
+            // 2. 該大格不能是已結束的
+            // 3. 該小格必須是空的
+            if (nextBoardIndex !== null && nextBoardIndex !== boardIndex) {
+                // 如果點擊了非指定區域，且指定區域未滿/未贏，則無效
+                if (!bigBoard[nextBoardIndex]) return; 
+            }
+            
+            // 如果該大格已結束，不能下
+            if (bigBoard[boardIndex]) return;
+
+            // 如果該小格已有子，不能下
+            if (smallBoards[boardIndex][cellIndex]) return;
+
+            // 執行下子
+            smallBoards[boardIndex][cellIndex] = currentPlayer;
+
+            // 檢查小棋盤勝利
+            checkSmallBoardWin(boardIndex);
+
+            // 檢查大棋盤勝利
+            if (checkBigBoardWin()) {
+                endGame(currentPlayer);
+                return;
+            } else if (checkDraw()) {
+                endGame('DRAW');
+                return;
+            }
+
+            // 設定下一手規則
+            // 規則：你在小棋盤下的位置 (cellIndex)，就是對手下次必須去的大棋盤位置
+            // 如果指向的那個大棋盤已經贏了或滿了，對手可以下任意位置 (null)
+            if (bigBoard[cellIndex] !== null || isBoardFull(cellIndex)) {
+                nextBoardIndex = null;
+            } else {
+                nextBoardIndex = cellIndex;
+            }
+
+            // 切換玩家
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            renderBoard();
+            updateStatus();
+        }
+
+        function checkSmallBoardWin(boardIndex) {
+            const board = smallBoards[boardIndex];
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    bigBoard[boardIndex] = currentPlayer; // 標記大格歸屬
+                    return;
+                }
+            }
+            // 檢查是否平局 (滿了但沒贏)
+            if (!board.includes(null)) {
+                bigBoard[boardIndex] = 'DRAW';
+            }
+        }
+
+        function checkBigBoardWin() {
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                // 忽略 DRAW，必須是真實玩家贏
+                if (bigBoard[a] && bigBoard[a] !== 'DRAW' &&
+                    bigBoard[a] === bigBoard[b] && bigBoard[a] === bigBoard[c]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function isBoardFull(boardIndex) {
+            return !smallBoards[boardIndex].includes(null);
+        }
+
+        function checkDraw() {
+            // 如果所有大格都有結果了(贏或平)，且沒人贏大盤，就是平局
+            return !bigBoard.includes(null);
+        }
+
+        function endGame(winner) {
+            gameActive = false;
+            renderBoard();
+            overlay.classList.add('show');
+            if (winner === 'DRAW') {
+                winnerText.textContent = '平局!';
+            } else {
+                winnerText.textContent = `${winner} 獲勝!`;
+                winnerText.style.color = winner === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+            }
+        }
+
+        function updateStatus() {
+            const color = currentPlayer === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+            let text = `當前玩家: <span style="color:${color}">${currentPlayer}</span>`;
+            
+            if (nextBoardIndex !== null && !bigBoard[nextBoardIndex]) {
+                // 簡單的方位描述 (0-8 映射到文字)
+                const positions = [
+                    "左上", "中上", "右上",
+                    "左中", "正中", "右中",
+                    "左下", "中下", "右下"
+                ];
+                text += ` (必須下在: ${positions[nextBoardIndex]})`;
+            } else {
+                text += ` (可下任意位置)`;
+            }
+            statusDisplay.innerHTML = text;
+        }
+
+        // 啟動
+        initGame();
+    </script>
+</body>
+</html>
