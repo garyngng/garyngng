@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <title>Quoridor</title>
+    <style>
+        :root {
+            --cell-size: 50px;
+            --gap-size: 10px;
+            --board-padding: 20px;
+            --p1-color: #d94e4e;
+            --p2-color: #e8c466;
+            --wall-color: #e6b800;
+            --pending-color: #4CAF50;
+            --board-bg: #2a2a2a;
+            --cell-bg: #3d3d3d;
+            --hover-wall: rgba(255, 255, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+
+        h1 { margin: 10px 0; }
+
+        #game-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .panel {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            width: 200px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .player-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .active-turn {
+            box-shadow: 0 0 15px 2px #4CAF50;
+            border: 2px solid #4CAF50;
+            background: #3d3d3d;
+        }
+
+        .wall-count { font-size: 24px; font-weight: bold; }
+        
+        #board-wrap {
+            position: relative;
+            background: #4a0e0e;
+            padding: var(--board-padding);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(9, var(--cell-size));
+            grid-template-rows: repeat(9, var(--cell-size));
+            gap: var(--gap-size);
+            background: var(--board-bg);
+            border: 5px solid var(--board-bg);
+        }
+
+        .cell {
+            background-color: var(--cell-bg);
+            width: var(--cell-size);
+            height: var(--cell-size);
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .cell.highlight {
+            background-color: #666;
+            box-shadow: inset 0 0 10px #4CAF50;
+        }
+
+        .pawn {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 10;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .p1-pawn { background: radial-gradient(circle at 30% 30%, #ff6b6b, var(--p1-color)); }
+        .p2-pawn { background: radial-gradient(circle at 30% 30%, #ffe082, var(--p2-color)); }
+
+        #wall-layer {
+            position: absolute;
+            top: var(--board-padding);
+            left: var(--board-padding);
+            width: calc(9 * var(--cell-size) + 8 * var(--gap-size));
+            height: calc(9 * var(--cell-size) + 8 * var(--gap-size));
+            pointer-events: none;
+        }
+
+        .wall {
+            position: absolute;
+            background: linear-gradient(45deg, #b8860b, #daa520);
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            z-index: 20;
+        }
+        
+        .wall.pending {
+            background: var(--pending-color);
+            box-shadow: 0 0 10px var(--pending-color);
+            opacity: 0.9;
+            z-index: 25;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        .wall.h { height: var(--gap-size); width: calc(2 * var(--cell-size) + var(--gap-size)); }
+        .wall.v { width: var(--gap-size); height: calc(2 * var(--cell-size) + var(--gap-size)); }
+
+        .preview-wall {
+            position: absolute;
+            background-color: var(--hover-wall);
+            pointer-events: none;
+            z-index: 30;
+            display: none;
+            border-radius: 2px;
+        }
+
+        #click-layer {
+            position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px; 
+            z-index: 100; pointer-events: none; 
+        }
+
+        #controls-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button { padding: 8px 16px; font-size: 15px; cursor: pointer; background: #555; color: white; border: none; border-radius: 4px; transition: background 0.2s; }
+        button:hover { background: #666; }
+        button.active { background: #4CAF50; }
+        
+        #btn-confirm { background-color: #2196F3; font-weight: bold; display: none; }
+        #btn-confirm:hover { background-color: #1976D2; }
+
+        #status { font-size: 1.2em; margin-top: 10px; color: #aaa; min-height: 1.5em; text-align: center; }
+        .error-msg { color: #ff6b6b !important; font-weight: bold; }
+        
+        .toggle-group { display: flex; align-items: center; gap: 8px; background: #444; padding: 5px 10px; border-radius: 20px; font-size: 14px; }
+        
+        .radio-group { display: flex; background: #222; border-radius: 15px; overflow: hidden; }
+        .radio-group label {
+            padding: 5px 12px; cursor: pointer; font-size: 13px; color: #888; transition: all 0.2s;
+        }
+        .radio-group input { display: none; }
+        .radio-group input:checked + span { color: white; font-weight: bold; }
+        .radio-label.checked { background: #2196F3; color: white !important; }
+
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #4CAF50; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+    </style>
+</head>
+<body>
+
+    <h1>Quoridor (自訂先手版)</h1>
+
+    <div id="game-container">
+        <div class="panel" id="p1-panel">
+            <div class="player-info active-turn" id="p1-info">
+                <h3 style="color: var(--p1-color)">玩家 (紅)</h3>
+                <p>目標：底部</p>
+                <div>剩餘牆壁: <span id="p1-walls" class="wall-count">10</span></div>
+            </div>
+        </div>
+
+        <div id="board-wrap">
+            <div id="board"></div>
+            <div id="wall-layer"></div>
+            <div id="preview-layer"></div>
+            <div id="click-layer"></div> 
+        </div>
+
+        <div class="panel" id="p2-panel">
+            <div class="player-info" id="p2-info">
+                <h3 style="color: var(--p2-color)">電腦 AI (黃)</h3>
+                <p>目標：頂部</p>
+                <div>剩餘牆壁: <span id="p2-walls" class="wall-count">10</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls-area">
+        <div class="control-row">
+            <div class="toggle-group">
+                <span>AI 對手</span>
+                <label class="switch">
+                    <input type="checkbox" id="ai-toggle" checked onchange="updateSettings()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-group" style="background: none; padding: 0;">
+                <div class="radio-group">
+                    <label class="radio-label checked" onclick="setStartPlayer(0)">
+                        <input type="radio" name="start" value="0" checked> <span>先手 (紅)</span>
+                    </label>
+                    <label class="radio-label" onclick="setStartPlayer(1)">
+                        <input type="radio" name="start" value="1"> <span>後手 (黃)</span>
+                    </label>
+                </div>
+            </div>
+
+            <button onclick="resetGame()" style="background: #666; font-size: 14px;">重新開始</button>
+        </div>
+
+        <div class="control-row">
+            <button id="mode-move" class="active" onclick="setMode('move')">移動 (M)</button>
+            <button id="mode-wall" onclick="setMode('wall')">放牆 (W)</button>
+            <button onclick="rotateWall()">旋轉 (R)</button>
+            <button id="btn-confirm" onclick="confirmWallPlacement()">✅ 確認 (Enter)</button>
+        </div>
+    </div>
+    
+    <div id="status">準備開始...</div>
+
+<script>
+    const COLS = 9;
+    const ROWS = 9;
+    const TOTAL_WALLS = 10;
+    
+    let players = [];
+    let turn = 0;
+    let walls = [];
+    let gameMode = 'move';
+    let wallOrientation = 'h';
+    let mouseR = -1, mouseC = -1;
+    let pendingWall = null;
+    let isAIEnabled = true;
+    let isProcessingTurn = false; // 關鍵修正：防止重複觸發
+    let gameOver = false;
+    let startPlayer = 0;
+
+    const boardEl = document.getElementById('board');
+    const wallLayer = document.getElementById('wall-layer');
+    const clickLayer = document.getElementById('click-layer');
+    const statusEl = document.getElementById('status');
+    const btnConfirm = document.getElementById('btn-confirm');
+    const previewWall = document.createElement('div');
+    previewWall.className = 'preview-wall';
+    document.getElementById('preview-layer').appendChild(previewWall);
+
+    let pendingWallEl = document.createElement('div');
+    pendingWallEl.className = 'wall pending';
+    pendingWallEl.style.display = 'none';
+    wallLayer.appendChild(pendingWallEl);
+
+    function init() {
+        createGrid();
+        resetGame();
+        setupEvents();
+    }
+
+    function createGrid() {
+        boardEl.innerHTML = '';
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                let cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.onclick = () => onCellClick(r, c);
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    function updateSettings() {
+        isAIEnabled = document.getElementById('ai-toggle').checked;
+        document.querySelector('#p2-info h3').innerText = isAIEnabled ? "電腦 AI (黃)" : "玩家 2 (黃)";
+    }
+
+    function setStartPlayer(p) {
+        startPlayer = p;
+        document.querySelectorAll('.radio-label').forEach(el => el.classList.remove('checked'));
+        document.querySelectorAll('.radio-label')[p].classList.add('checked');
+        resetGame();
+    }
+
+    function resetGame() {
+        isAIEnabled = document.getElementById('ai-toggle').checked;
+        
+        players = [
+            { r: 0, c: 4, color: 'p1', walls: TOTAL_WALLS, goalRow: 8 },
+            { r: 8, c: 4, color: 'p2', walls: TOTAL_WALLS, goalRow: 0 }
+        ];
+        
+        turn = startPlayer;
+        walls = [];
+        pendingWall = null;
+        isProcessingTurn = false;
+        gameOver = false;
+        wallLayer.innerHTML = '';
+        wallLayer.appendChild(pendingWallEl);
+        pendingWallEl.style.display = 'none';
+        
+        setMode('move');
+        render();
+
+        // 延遲觸發 AI，確保 render 完成
+        if (isAIEnabled && turn === 1) {
+            setTimeout(() => {
+                if (!isProcessingTurn && !gameOver) {
+                    triggerAI();
+                }
+            }, 100);
+        }
+    }
+
+    function triggerAI() {
+        if (isProcessingTurn || gameOver || turn !== 1 || !isAIEnabled) return;
+        
+        isProcessingTurn = true;
+        statusEl.innerText = "電腦正在思考...";
+        clickLayer.style.pointerEvents = 'none';
+        pendingWall = null;
+        pendingWallEl.style.display = 'none';
+        btnConfirm.style.display = 'none';
+        
+        setTimeout(() => {
+            if (!gameOver && turn === 1) {
+                makeAIMove();
+            }
+        }, 600);
+    }
+
+    function setMode(mode) {
+        if(isProcessingTurn || gameOver) return;
+        gameMode = mode;
+        pendingWall = null;
+        pendingWallEl.style.display = 'none';
+        btnConfirm.style.display = 'none';
+
+        document.getElementById('mode-move').className = mode === 'move' ? 'active' : '';
+        document.getElementById('mode-wall').className = mode === 'wall' ? 'active' : '';
+        
+        if (mode === 'wall') {
+            clickLayer.style.pointerEvents = 'auto';
+            previewWall.style.display = 'block';
+            statusEl.innerText = "請點擊棋盤選擇牆壁位置";
+        } else {
+            clickLayer.style.pointerEvents = 'none';
+            previewWall.style.display = 'none';
+            updateStatus();
+        }
+        render();
+    }
+
+    function switchTurn() {
+        if (gameOver) return;
+        
+        turn = 1 - turn;
+        pendingWall = null;
+        pendingWallEl.style.display = 'none';
+        btnConfirm.style.display = 'none';
+        isProcessingTurn = false; // 重要：釋放鎖
+        
+        render();
+        
+        if (checkWin()) {
+            gameOver = true;
+            return;
+        }
+
+        // AI 判斷
+        if (isAIEnabled && turn === 1 && !gameOver) {
+            setTimeout(() => {
+                if (!isProcessingTurn && !gameOver && turn === 1) {
+                    triggerAI();
+                }
+            }, 100);
+        } else {
+            setMode('move');
+        }
+    }
+
+    function checkWin() {
+        let p = players[1-turn];
+        if (p.r === p.goalRow) {
+            gameOver = true;
+            setTimeout(() => {
+                let winner = (1-turn === 0) ? "玩家 (紅)" : (isAIEnabled ? "電腦 AI" : "玩家 2");
+                alert(`遊戲結束！${winner} 獲勝！`);
+            }, 100);
+            return true;
+        }
+        return false;
+    }
+
+    // --- AI Logic ---
+    function makeAIMove() {
+        if (gameOver || turn !== 1) {
+            isProcessingTurn = false;
+            return;
+        }
+
+        let ai = players[1];
+        let human = players[0];
+        let aiPath = getShortestPath(ai.r, ai.c, ai.goalRow);
+        let humanPath = getShortestPath(human.r, human.c, human.goalRow);
+
+        if (!aiPath) { 
+            console.error("AI Stuck"); 
+            isProcessingTurn = false;
+            return;
+        }
+
+        let aiDist = aiPath.length;
+        let humanDist = humanPath ? humanPath.length : 999;
+        let action = "move";
+
+        if (ai.walls > 0 && (humanDist < aiDist || humanDist < 5)) {
+            let aggressiveThreshold = (humanDist <= 3) ? 1.0 : 0.7;
+            if (Math.random() < aggressiveThreshold) {
+                let bestWall = findBestWall(ai, human, aiDist, humanDist);
+                if (bestWall) {
+                    placeWallPermanent(bestWall.r, bestWall.c, bestWall.type);
+                    ai.walls--;
+                    action = "wall";
+                }
+            }
+        }
+
+        if (action === "move") {
+            if (aiPath.length > 1) {
+                let nextStep = aiPath[1];
+                ai.r = nextStep.r;
+                ai.c = nextStep.c;
+            } else {
+                let moves = getValidMoves(1);
+                let goalMove = moves.find(m => m.r === 0);
+                if (goalMove) { ai.r = goalMove.r; ai.c = goalMove.c; }
+                else if (moves.length > 0) { ai.r = moves[0].r; ai.c = moves[0].c; }
+            }
+        }
+        
+        switchTurn();
+    }
+
+    function findBestWall(ai, human, currentAiDist, currentHumanDist) {
+        let bestScore = -999;
+        let bestWalls = [];
+        
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                for (let type of ['h', 'v']) {
+                    if (canPlaceWall(r, c, type)) {
+                        walls.push({r, c, type});
+                        let newAiPath = getShortestPath(ai.r, ai.c, ai.goalRow);
+                        let newHumanPath = getShortestPath(human.r, human.c, human.goalRow);
+                        walls.pop();
+
+                        if (newAiPath && newHumanPath) {
+                            let humanDelay = newHumanPath.length - currentHumanDist;
+                            let aiDelay = newAiPath.length - currentAiDist;
+                            let score = humanDelay - (aiDelay * 1.2);
+                            
+                            if (humanDelay > 0) {
+                                if (score > bestScore) {
+                                    bestScore = score;
+                                    bestWalls = [{r, c, type}];
+                                } else if (score === bestScore) {
+                                    bestWalls.push({r, c, type});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (bestWalls.length > 0) {
+            return bestWalls[Math.floor(Math.random() * bestWalls.length)];
+        }
+        return null;
+    }
+
+    function getShortestPath(startR, startC, targetRow) {
+        let queue = [{r: startR, c: startC, path: [{r: startR, c: startC}]}];
+        let visited = new Set();
+        visited.add(`${startR},${startC}`);
+
+        while (queue.length > 0) {
+            let curr = queue.shift();
+            if (curr.r === targetRow) return curr.path;
+
+            let dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+            for (let d of dirs) {
+                let nr = curr.r + d[0];
+                let nc = curr.c + d[1];
+                if (isValidStepBasic(curr.r, curr.c, nr, nc) && !visited.has(`${nr},${nc}`)) {
+                    visited.add(`${nr},${nc}`);
+                    queue.push({
+                        r: nr, c: nc, 
+                        path: [...curr.path, {r: nr, c: nc}]
+                    });
+                }
+            }
+        }
+        return null;
+    }
+    
+    function isValidStepBasic(r1, c1, r2, c2) {
+        if (r2 < 0 || r2 >= ROWS || c2 < 0 || c2 >= COLS) return false;
+        let isVertical = (Math.abs(r1 - r2) === 1);
+        for (let w of walls) {
+            if (w.type === 'h') {
+                if (isVertical) {
+                    let minR = Math.min(r1, r2);
+                    if (w.r === minR && (w.c === c1 || w.c === c1 - 1)) return false;
+                }
+            } else {
+                if (!isVertical) {
+                    let minC = Math.min(c1, c2);
+                    if (w.c === minC && (w.r === r1 || w.r === r1 - 1)) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function selectWallLocation(r, c) {
+        if (isProcessingTurn || gameOver) return;
+        if (players[turn].walls <= 0) { showError("沒牆壁了"); return; }
+        if (canPlaceWall(r, c, wallOrientation)) {
+            pendingWall = { r, c, type: wallOrientation };
+            updatePendingWallVisual();
+            btnConfirm.style.display = 'block';
+            statusEl.innerText = "按確認或 Enter 放置";
+            statusEl.className = "";
+        } else {
+            showError("無效位置");
+        }
+    }
+
+    function confirmWallPlacement() {
+        if (!pendingWall || isProcessingTurn || gameOver) return;
+        if (canPlaceWall(pendingWall.r, pendingWall.c, pendingWall.type)) {
+            isProcessingTurn = true; // 上鎖
+            placeWallPermanent(pendingWall.r, pendingWall.c, pendingWall.type);
+            players[turn].walls--;
+            switchTurn();
+        }
+    }
+
+    function placeWallPermanent(r, c, type) {
+        walls.push({r, c, type});
+        let wDiv = document.createElement('div');
+        wDiv.className = `wall ${type}`;
+        let step = 60; let cell = 50;
+        if (type === 'h') { wDiv.style.top = (r*step+cell)+'px'; wDiv.style.left = (c*step)+'px'; }
+        else { wDiv.style.top = (r*step)+'px'; wDiv.style.left = (c*step+cell)+'px'; }
+        wallLayer.appendChild(wDiv);
+    }
+
+    function canPlaceWall(r, c, type) {
+        for (let w of walls) {
+            if (w.r === r && w.c === c && w.type === type) return false;
+            if (type === 'h' && w.type === 'h' && w.r === r && Math.abs(w.c - c) === 1) return false;
+            if (type === 'v' && w.type === 'v' && w.c === c && Math.abs(w.r - r) === 1) return false;
+            if (w.r === r && w.c === c && w.type !== type) return false;
+        }
+        walls.push({r, c, type});
+        let p1Safe = getShortestPath(players[0].r, players[0].c, players[0].goalRow) !== null;
+        let p2Safe = getShortestPath(players[1].r, players[1].c, players[1].goalRow) !== null;
+        walls.pop();
+        return p1Safe && p2Safe;
+    }
+
+    function getValidMoves(playerIdx) {
+        let p = players[playerIdx];
+        let opponent = players[1 - playerIdx];
+        let moves = [];
+        let dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+
+        dirs.forEach(d => {
+            let nr = p.r + d[0];
+            let nc = p.c + d[1];
+            if (isValidStepBasic(p.r, p.c, nr, nc)) {
+                if (nr === opponent.r && nc === opponent.c) {
+                    let jumpR = nr + d[0];
+                    let jumpC = nc + d[1];
+                    if (isValidStepBasic(nr, nc, jumpR, jumpC)) {
+                        moves.push({r: jumpR, c: jumpC});
+                    } else {
+                        let sideDirs = (d[0]!==0) ? [[0, -1], [0, 1]] : [[-1, 0], [1, 0]];
+                        sideDirs.forEach(sd => {
+                            let diagR = nr + sd[0];
+                            let diagC = nc + sd[1];
+                            if (isValidStepBasic(nr, nc, diagR, diagC)) moves.push({r: diagR, c: diagC});
+                        });
+                    }
+                } else {
+                    moves.push({r: nr, c: nc});
+                }
+            }
+        });
+        return moves;
+    }
+
+    function onCellClick(r, c) {
+        if (gameMode !== 'move' || isProcessingTurn || gameOver || turn !== 0) return;
+        let validMoves = getValidMoves(turn);
+        let isValid = validMoves.some(m => m.r === r && m.c === c);
+        if (isValid) {
+            isProcessingTurn = true; // 上鎖
+            players[turn].r = r;
+            players[turn].c = c;
+            switchTurn();
+        }
+    }
+
+    function updatePendingWallVisual() {
+        if (!pendingWall) return;
+        let step = 60; let cell = 50;
+        pendingWallEl.className = `wall pending ${pendingWall.type}`;
+        pendingWallEl.style.display = 'block';
+        if (pendingWall.type === 'h') { pendingWallEl.style.top = (pendingWall.r*step+cell)+'px'; pendingWallEl.style.left = (pendingWall.c*step)+'px'; }
+        else { pendingWallEl.style.top = (pendingWall.r*step)+'px'; pendingWallEl.style.left = (pendingWall.c*step+cell)+'px'; }
+    }
+
+    function rotateWall() {
+        if (pendingWall) {
+            pendingWall.type = pendingWall.type === 'h' ? 'v' : 'h';
+            updatePendingWallVisual();
+        }
+        wallOrientation = wallOrientation === 'h' ? 'v' : 'h';
+        renderPreview();
+    }
+
+    function setupEvents() {
+        clickLayer.addEventListener('mousemove', (e) => {
+            if (gameMode !== 'wall') return;
+            let rect = clickLayer.getBoundingClientRect();
+            let x = e.clientX - rect.left; let y = e.clientY - rect.top;
+            let cellSize = 60;
+            let c = Math.floor(x / cellSize); let r = Math.floor(y / cellSize);
+            if (c > 7) c = 7; if (r > 7) r = 7; if (c < 0) c = 0; if (r < 0) r = 0;
+            mouseR = r; mouseC = c;
+            renderPreview();
+        });
+        clickLayer.addEventListener('click', () => {
+            if (gameMode !== 'wall') return;
+            selectWallLocation(mouseR, mouseC);
+        });
+        clickLayer.addEventListener('contextmenu', (e) => { e.preventDefault(); rotateWall(); });
+    }
+
+    function renderPreview() {
+        if (gameMode !== 'wall') return;
+        previewWall.style.display = 'block';
+        previewWall.className = `preview-wall ${wallOrientation}`;
+        let step = 60; let cell = 50;
+        let top, left;
+        if (wallOrientation === 'h') { top = mouseR * step + cell; left = mouseC * step; }
+        else { left = mouseC * step + cell; top = mouseR * step; }
+        previewWall.style.top = top + 'px'; previewWall.style.left = left + 'px';
+    }
+
+    function render() {
+        updateStatus();
+        document.getElementById('p1-info').className = `player-info ${turn===0 ? 'active-turn' : ''}`;
+        document.getElementById('p2-info').className = `player-info ${turn===1 ? 'active-turn' : ''}`;
+        document.getElementById('p1-walls').innerText = players[0].walls;
+        document.getElementById('p2-walls').innerText = players[1].walls;
+        document.querySelectorAll('.pawn').forEach(e => e.remove());
+        document.querySelectorAll('.cell').forEach(e => e.classList.remove('highlight'));
+
+        players.forEach(p => {
+            let cell = document.querySelector(`.cell[data-r='${p.r}'][data-c='${p.c}']`);
+            if(cell) {
+                let pawn = document.createElement('div');
+                pawn.className = `pawn ${p.color}-pawn`;
+                cell.appendChild(pawn);
+            }
+        });
+
+        if (gameMode === 'move' && turn === 0 && !isProcessingTurn && !gameOver) {
+            let moves = getValidMoves(0);
+            moves.forEach(m => {
+                let cell = document.querySelector(`.cell[data-r='${m.r}'][data-c='${m.c}']`);
+                if(cell) cell.classList.add('highlight');
+            });
+        }
+    }
+
+    function updateStatus() {
+        if (gameOver) { statusEl.innerText = "遊戲已結束"; return; }
+        if (pendingWall) return;
+        if (isProcessingTurn && turn === 1) { statusEl.innerText = "電腦正在思考..."; return; }
+        
+        let pName = turn === 0 ? "玩家" : (isAIEnabled ? "電腦" : "玩家 2");
+        let action = gameMode === 'move' ? "移動" : "選擇牆壁";
+        statusEl.innerText = `輪到 ${pName} - 請${action}`;
+        statusEl.className = "";
+    }
+
+    function showError(msg) {
+        statusEl.innerText = msg;
+        statusEl.className = "error-msg";
+        setTimeout(() => { if(!pendingWall) updateStatus(); }, 2000);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (isProcessingTurn || gameOver) return;
+        if (e.key === 'r' || e.key === 'R') rotateWall();
+        if (e.key === 'm' || e.key === 'M') setMode('move');
+        if (e.key === 'w' || e.key === 'W') setMode('wall');
+        if (e.key === 'Enter') confirmWallPlacement();
+    });
+
+    init();
+</script>
+</body>
+</html>
