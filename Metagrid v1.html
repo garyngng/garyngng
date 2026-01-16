@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Grid - 終極井字過三關</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --grid-color: #2c3e50;
+            --cell-bg: #fff;
+            --hover-bg: #e3f2fd;
+            --active-board-bg: #fffde7;
+            --active-board-border: #f1c40f;
+            --player-x-color: #e74c3c;
+            --player-o-color: #3498db;
+            --last-move-highlight: rgba(255, 235, 59, 0.6);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            user-select: none;
+        }
+
+        h1 { color: #2c3e50; margin: 10px 0; font-size: 2rem; letter-spacing: 2px;}
+
+        /* 控制面板 */
+        .controls-panel {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-width: 600px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+
+        select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.95rem;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.1s, opacity 0.2s;
+            height: 40px; /* 統一高度 */
+            align-self: flex-end; /* 對齊底部 */
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-undo { background-color: #95a5a6; }
+        .btn-restart { background-color: #27ae60; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* 狀態列 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 15px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .status-text { font-size: 1.1rem; font-weight: bold; color: #34495e; }
+        
+        .ai-indicator {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #e67e22;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ai-indicator.active { opacity: 1; }
+        
+        /* 載入動畫小點 */
+        .dot-flashing {
+            position: relative;
+            width: 6px; height: 6px;
+            border-radius: 5px;
+            background-color: #e67e22;
+            animation: dot-flashing 1s infinite linear alternate;
+            animation-delay: 0.5s;
+        }
+        .dot-flashing::before, .dot-flashing::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 6px; height: 6px;
+            border-radius: 5px;
+            background-color: #e67e22;
+            animation: dot-flashing 1s infinite alternate;
+        }
+        .dot-flashing::before { left: -10px; animation-delay: 0s; }
+        .dot-flashing::after { left: 10px; animation-delay: 1s; }
+        @keyframes dot-flashing {
+            0% { background-color: #e67e22; }
+            50%, 100% { background-color: #fcebe1; }
+        }
+
+        /* 遊戲棋盤 */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 6px;
+            background-color: var(--grid-color);
+            padding: 6px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+        }
+
+        .small-board {
+            background-color: var(--cell-bg);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            padding: 2px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        .small-board.active {
+            background-color: var(--active-board-bg);
+            box-shadow: inset 0 0 0 3px var(--active-board-border);
+        }
+
+        .small-board.won::after {
+            content: attr(data-winner);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: 800;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+        }
+        .small-board.won[data-winner="X"]::after { color: var(--player-x-color); }
+        .small-board.won[data-winner="O"]::after { color: var(--player-o-color); }
+
+        .cell {
+            background-color: var(--cell-bg);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .small-board.active .cell:not(.X):not(.O):hover { background-color: var(--hover-bg); }
+        
+        .cell.X { color: var(--player-x-color); }
+        .cell.O { color: var(--player-o-color); }
+        .cell.last-move { background-color: var(--last-move-highlight); }
+
+        /* 遮罩 */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(44, 62, 80, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.show { visibility: visible; opacity: 1; }
+        .overlay h2 { font-size: 3rem; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+
+        @media (max-width: 500px) {
+            .cell { font-size: 1rem; }
+            h1 { font-size: 1.5rem; }
+            .controls-panel { gap: 5px; }
+            .btn { padding: 8px 12px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Meta Grid</h1>
+
+    <div class="controls-panel">
+        <div class="control-group">
+            <label>遊戲模式</label>
+            <select id="gameMode" onchange="initGame()">
+                <option value="PvP">玩家 vs 玩家</option>
+                <option value="PvAI" selected>玩家 vs 電腦</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>先手選擇 (PvAI)</label>
+            <select id="startPlayer" onchange="initGame()">
+                <option value="HUMAN">玩家先手 (X)</option>
+                <option value="AI">電腦先手 (X)</option>
+                <option value="RANDOM">隨機先手</option>
+            </select>
+        </div>
+
+        <button class="btn btn-undo" id="undoBtn" onclick="undo()" disabled>悔棋</button>
+        <button class="btn btn-restart" onclick="initGame()">重新開始</button>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-text" id="status">準備開始...</div>
+        <div class="ai-indicator" id="aiStatus">
+            AI 思考中 <div class="dot-flashing" style="margin-left: 15px;"></div>
+        </div>
+    </div>
+
+    <div class="game-board" id="gameBoard"></div>
+
+    <div class="overlay" id="overlay">
+        <h2 id="winnerText">X 獲勝!</h2>
+        <button class="btn btn-restart" style="padding: 15px 40px; font-size: 1.2rem; border-radius: 50px;" onclick="initGame()">再來一局</button>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const statusDisplay = document.getElementById('status');
+        const aiStatus = document.getElementById('aiStatus');
+        const overlay = document.getElementById('overlay');
+        const winnerText = document.getElementById('winnerText');
+        const undoBtn = document.getElementById('undoBtn');
+        const modeSelect = document.getElementById('gameMode');
+        const startPlayerSelect = document.getElementById('startPlayer');
+
+        // 遊戲狀態變數
+        let bigBoard = [];
+        let smallBoards = [];
+        let currentPlayer = 'X';
+        let nextBoardIndex = null;
+        let gameActive = true;
+        let historyStack = [];
+        let lastMove = null;
+        let isAiThinking = false;
+
+        // 玩家標記 (在 initGame 時動態決定)
+        let humanSymbol = 'X';
+        let aiSymbol = 'O';
+
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function initGame() {
+            // 1. 初始化數據
+            bigBoard = Array(9).fill(null);
+            smallBoards = Array(9).fill(null).map(() => Array(9).fill(null));
+            currentPlayer = 'X'; // 規則：X 永遠是先手
+            nextBoardIndex = null;
+            gameActive = true;
+            historyStack = [];
+            lastMove = null;
+            isAiThinking = false;
+
+            // 2. 界面重置
+            overlay.classList.remove('show');
+            undoBtn.disabled = true;
+            aiStatus.classList.remove('active');
+            
+            // 3. 處理先手邏輯
+            const mode = modeSelect.value;
+            const startPref = startPlayerSelect.value;
+
+            // 只有在 PvAI 模式下才需要鎖定玩家符號
+            if (mode === 'PvAI') {
+                startPlayerSelect.disabled = false;
+                
+                let isHumanStart = true;
+                if (startPref === 'AI') isHumanStart = false;
+                else if (startPref === 'RANDOM') isHumanStart = Math.random() > 0.5;
+
+                if (isHumanStart) {
+                    humanSymbol = 'X';
+                    aiSymbol = 'O';
+                } else {
+                    humanSymbol = 'O';
+                    aiSymbol = 'X';
+                }
+            } else {
+                startPlayerSelect.disabled = true;
+                // PvP 模式下不區分人/AI符號，只看 currentPlayer
+            }
+
+            renderBoard();
+            updateStatus();
+
+            // 4. 如果是 AI 先手 (AI 是 X)，觸發 AI
+            if (mode === 'PvAI' && currentPlayer === aiSymbol) {
+                triggerAiMove();
+            }
+        }
+
+        // --- 核心互動 ---
+        function handleMove(boardIndex, cellIndex, isAiMove = false) {
+            if (!gameActive) return;
+            const mode = modeSelect.value;
+
+            // 檢查是不是 AI 的回合但玩家在點擊
+            if (mode === 'PvAI' && currentPlayer === aiSymbol && !isAiMove) return;
+            if (isAiThinking && !isAiMove) return;
+
+            // 規則檢查
+            if (nextBoardIndex !== null && nextBoardIndex !== boardIndex) {
+                if (!bigBoard[nextBoardIndex]) return; 
+            }
+            if (bigBoard[boardIndex] || smallBoards[boardIndex][cellIndex]) return;
+
+            // 記錄狀態
+            saveState();
+
+            // 執行下子
+            smallBoards[boardIndex][cellIndex] = currentPlayer;
+            lastMove = { boardIndex, cellIndex };
+
+            // 檢查勝負
+            checkSmallBoardWin(boardIndex);
+            
+            if (checkBigBoardWin()) {
+                endGame(currentPlayer);
+                return;
+            } else if (checkDraw()) {
+                endGame('DRAW');
+                return;
+            }
+
+            // 設定下一手
+            if (bigBoard[cellIndex] === null && !isBoardFull(cellIndex)) {
+                nextBoardIndex = cellIndex;
+            } else {
+                nextBoardIndex = null;
+            }
+
+            // 切換玩家
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            
+            renderBoard();
+            updateStatus();
+
+            // 如果輪到 AI，觸發思考
+            if (gameActive && mode === 'PvAI' && currentPlayer === aiSymbol) {
+                triggerAiMove();
+            }
+        }
+
+        function triggerAiMove() {
+            isAiThinking = true;
+            aiStatus.classList.add('active');
+            
+            // 隨機延遲 500-1000ms 模擬思考
+            const delay = 500 + Math.random() * 500;
+            setTimeout(() => {
+                makeAiMove();
+                isAiThinking = false;
+                aiStatus.classList.remove('active');
+            }, delay);
+        }
+
+        // --- AI 算法 (Smart Greedy) ---
+        function makeAiMove() {
+            if (!gameActive) return;
+
+            let possibleMoves = [];
+            let targetBoards = [];
+
+            if (nextBoardIndex !== null && !bigBoard[nextBoardIndex]) {
+                targetBoards.push(nextBoardIndex);
+            } else {
+                for(let i=0; i<9; i++) if(!bigBoard[i]) targetBoards.push(i);
+            }
+
+            for (let bIdx of targetBoards) {
+                for (let cIdx = 0; cIdx < 9; cIdx++) {
+                    if (!smallBoards[bIdx][cIdx]) {
+                        possibleMoves.push({ b: bIdx, c: cIdx, score: 0 });
+                    }
+                }
+            }
+
+            if (possibleMoves.length === 0) return;
+
+            // 評分
+            possibleMoves.forEach(move => {
+                move.score = evaluateMove(move.b, move.c);
+            });
+
+            // 排序 (高分在前)
+            possibleMoves.sort((a, b) => b.score - a.score);
+            
+            // Top-K 隨機選擇 (防止太單調)
+            const bestScore = possibleMoves[0].score;
+            // 只要分數差距在 15 分以內都算好棋，可以隨機選
+            const bestMoves = possibleMoves.filter(m => m.score >= bestScore - 15);
+            const selectedMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+
+            handleMove(selectedMove.b, selectedMove.c, true);
+        }
+
+        function evaluateMove(bIdx, cIdx) {
+            let score = 0;
+            const mySym = aiSymbol;
+            const oppSym = humanSymbol;
+            
+            // 1. 佔領小格
+            smallBoards[bIdx][cIdx] = mySym;
+            if (checkWinSim(smallBoards[bIdx], mySym)) score += 100; // 贏下這格
+            smallBoards[bIdx][cIdx] = null; // 還原
+
+            // 2. 阻擋對手
+            smallBoards[bIdx][cIdx] = oppSym;
+            if (checkWinSim(smallBoards[bIdx], oppSym)) score += 80; // 阻止對手贏
+            smallBoards[bIdx][cIdx] = null; // 還原
+
+            // 3. 位置加分
+            if (cIdx === 4) score += 5; // 中心
+            if ([0,2,6,8].includes(cIdx)) score += 3; // 角落
+
+            // 4. 送對手去哪裡 (關鍵)
+            const target = cIdx;
+            // 如果送去的地方已滿/已贏 -> 對手獲得自由權 (大扣分)
+            if (bigBoard[target] || isBoardFull(target)) {
+                score -= 30;
+            } else {
+                // 如果送去的地方，對手已經聽牌 (差一步贏) -> (特大扣分)
+                if (canWinNext(smallBoards[target], oppSym)) {
+                    score -= 60;
+                }
+            }
+            return score;
+        }
+
+        function checkWinSim(boardArr, symbol) {
+            return winningCombinations.some(c => 
+                boardArr[c[0]] === symbol && boardArr[c[1]] === symbol && boardArr[c[2]] === symbol
+            );
+        }
+
+        function canWinNext(boardArr, symbol) {
+            for (let i = 0; i < 9; i++) {
+                if (!boardArr[i]) {
+                    let temp = [...boardArr];
+                    temp[i] = symbol;
+                    if (checkWinSim(temp, symbol)) return true;
+                }
+            }
+            return false;
+        }
+
+        // --- 狀態管理 ---
+        function saveState() {
+            const state = {
+                bigBoard: JSON.parse(JSON.stringify(bigBoard)),
+                smallBoards: JSON.parse(JSON.stringify(smallBoards)),
+                currentPlayer,
+                nextBoardIndex,
+                gameActive,
+                lastMove: lastMove ? {...lastMove} : null
+            };
+            historyStack.push(state);
+            undoBtn.disabled = false;
+        }
+
+        function undo() {
+            if (historyStack.length === 0 || !gameActive || isAiThinking) return;
+
+            const mode = modeSelect.value;
+            // 如果是 PvAI，要麼退 2 步 (回到玩家回合)，要麼退 1 步 (如果剛開局 AI 先手走了 1 步)
+            let stepsToUndo = 1;
+
+            if (mode === 'PvAI') {
+                if (currentPlayer === humanSymbol) {
+                    // 現在輪到人，說明 AI 剛走完，或者剛開局人還沒走
+                    // 通常情況：人 -> AI -> (現在人)。悔棋要退 2 步回到 (現在人) 的上一個狀態
+                    // 但如果是 AI 先手開局：AI -> (現在人)。只需退 1 步
+                    if (historyStack.length >= 2) stepsToUndo = 2;
+                }
+            }
+
+            while (stepsToUndo > 0 && historyStack.length > 0) {
+                const s = historyStack.pop();
+                bigBoard = s.bigBoard;
+                smallBoards = s.smallBoards;
+                currentPlayer = s.currentPlayer;
+                nextBoardIndex = s.nextBoardIndex;
+                gameActive = s.gameActive;
+                lastMove = s.lastMove;
+                stepsToUndo--;
+            }
+
+            if (historyStack.length === 0) undoBtn.disabled = true;
+            renderBoard();
+            updateStatus();
+        }
+
+        // --- 判定與渲染 ---
+        function checkSmallBoardWin(idx) {
+            const b = smallBoards[idx];
+            for (let c of winningCombinations) {
+                if (b[c[0]] && b[c[0]] === b[c[1]] && b[c[0]] === b[c[2]]) {
+                    bigBoard[idx] = currentPlayer; return;
+                }
+            }
+            if (!b.includes(null)) bigBoard[idx] = 'DRAW';
+        }
+
+        function checkBigBoardWin() {
+            for (let c of winningCombinations) {
+                if (bigBoard[c[0]] && bigBoard[c[0]] !== 'DRAW' && 
+                    bigBoard[c[0]] === bigBoard[c[1]] && bigBoard[c[0]] === bigBoard[c[2]]) return true;
+            }
+            return false;
+        }
+
+        function checkDraw() { return !bigBoard.includes(null); }
+        function isBoardFull(idx) { return !smallBoards[idx].includes(null); }
+
+        function endGame(winner) {
+            gameActive = false;
+            renderBoard();
+            overlay.classList.add('show');
+            let msg = '';
+            if (winner === 'DRAW') {
+                msg = '勢均力敵！平局！';
+                winnerText.style.color = 'white';
+            } else {
+                if (modeSelect.value === 'PvAI') {
+                    msg = (winner === humanSymbol) ? '恭喜！你贏了！' : 'AI 獲勝！';
+                } else {
+                    msg = `${winner} 獲勝！`;
+                }
+                winnerText.style.color = winner === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+            }
+            winnerText.textContent = msg;
+        }
+
+        function renderBoard() {
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const sbDiv = document.createElement('div');
+                sbDiv.className = 'small-board';
+                
+                // 高亮邏輯
+                const isTarget = (nextBoardIndex === null || nextBoardIndex === i);
+                if (gameActive && isTarget && !bigBoard[i]) sbDiv.classList.add('active');
+                if (bigBoard[i]) {
+                    sbDiv.classList.add('won');
+                    sbDiv.setAttribute('data-winner', bigBoard[i] === 'DRAW' ? '-' : bigBoard[i]);
+                }
+
+                for (let j = 0; j < 9; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (smallBoards[i][j]) {
+                        cell.textContent = smallBoards[i][j];
+                        cell.classList.add(smallBoards[i][j]);
+                    }
+                    if (lastMove && lastMove.boardIndex === i && lastMove.cellIndex === j) {
+                        cell.classList.add('last-move');
+                    }
+                    cell.addEventListener('click', () => handleMove(i, j));
+                    sbDiv.appendChild(cell);
+                }
+                gameBoard.appendChild(sbDiv);
+            }
+        }
+
+        function updateStatus() {
+            // 顯示文字：當前輪到誰
+            let text = '';
+            const color = currentPlayer === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+            
+            if (modeSelect.value === 'PvAI') {
+                if (currentPlayer === humanSymbol) text = `輪到你 (<span style="color:${color}">${currentPlayer}</span>)`;
+                else text = `輪到電腦 (<span style="color:${color}">${currentPlayer}</span>)`;
+            } else {
+                text = `輪到玩家 <span style="color:${color}">${currentPlayer}</span>`;
+            }
+
+            // 顯示文字：必須去哪裡
+            if (nextBoardIndex !== null && !bigBoard[nextBoardIndex]) {
+                const pos = ["左上", "中上", "右上", "左中", "正中", "右中", "左下", "中下", "右下"];
+                text += ` -> 去 ${pos[nextBoardIndex]}`;
+            } else {
+                text += ` -> <span style="color:#27ae60">自由移動</span>`;
+            }
+            
+            statusDisplay.innerHTML = text;
+        }
+
+        // 啟動
+        initGame();
+
+    </script>
+</body>
+</html>
