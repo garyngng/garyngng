@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026年 越野跑賽事曆</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --bg-color: #f4f6f7;
+            
+            /* Type 1: Holidays (紅色) */
+            --holiday-color: #c0392b;
+            --holiday-bg: #fff5f5;
+            
+            /* User Type: Pending (黃色 - 用於越野賽) */
+            --user-pending-color: #d35400; 
+            --user-pending-bg: #fef9e7;    
+            --user-pending-border: #f5b041;
+
+            /* User Type: Confirmed (綠色) */
+            --user-confirmed-color: #27ae60; 
+            --user-confirmed-bg: #e9f7ef;    
+            --user-confirmed-border: #82e0aa;
+
+            --weekend-color: #95a5a6;
+        }
+        
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: #333; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 10px; }
+        
+        /* Legend */
+        .legend { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; font-size: 0.9em; flex-wrap: wrap; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); max-width: 800px; margin-left: auto; margin-right: auto; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .box-sample { padding: 2px 6px; border-radius: 4px; font-size: 0.8em; font-weight: bold; border: 1px solid transparent;}
+        
+        /* Layout */
+        .calendar-year { display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 900px; margin: 0 auto; }
+        .month-container { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); padding: 25px; }
+        .month-header { text-align: center; font-weight: bold; font-size: 1.5em; margin-bottom: 20px; color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+        .day-label { font-size: 1em; font-weight: bold; color: #666; padding: 10px 0; background: #f9f9f9; border-radius: 4px; margin-bottom: 5px; }
+        
+        /* Grid Cell */
+        .day-cell { height: 130px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 4px; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; position: relative; background: #fff; overflow: hidden; }
+        .day-cell:hover { border-color: #3498db; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 2; }
+        .day-number { font-weight: 700; width: 100%; text-align: left; padding-left: 6px; font-size: 1.1em; margin-bottom: 4px; line-height: 1; flex-shrink: 0; }
+        
+        /* Tags */
+        .tag { font-size: 11px; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; width: 92%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; line-height: 1.3; flex-shrink: 0; border: 1px solid transparent; }
+        .type-holiday .day-number { color: var(--holiday-color); }
+        .type-holiday { background-color: var(--holiday-bg); border-color: #fadbd8; }
+        .tag-holiday { color: var(--holiday-color); background: rgba(231, 76, 60, 0.1); font-weight: 600; }
+        .is-weekend .day-number { color: var(--weekend-color); }
+
+        /* User Event Styles */
+        .tag-user-pending { background-color: var(--user-pending-bg); color: var(--user-pending-color); border: 1px solid var(--user-pending-border); margin-bottom: 2px; }
+        .tag-user-confirmed { background-color: var(--user-confirmed-bg); color: var(--user-confirmed-color); border: 1px solid var(--user-confirmed-border); margin-bottom: 2px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .modal-content { background-color: white; padding: 0; border-radius: 12px; width: 90%; max-width: 500px; max-height: 85vh; box-shadow: 0 15px 30px rgba(0,0,0,0.25); overflow-y: auto; }
+        .modal-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .modal-title { font-size: 1.2em; font-weight: bold; color: #2c3e50; }
+        .modal-body { padding: 20px; }
+        
+        .info-row { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed #e0e0e0; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { display: block; margin-bottom: 5px; font-weight: 600; color: #7f8c8d; font-size: 0.9em;}
+        .info-value { background: #fdfdfd; padding: 10px; border-radius: 6px; border: 1px solid #eee; color: #2c3e50; line-height: 1.5; white-space: pre-wrap; }
+
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
+        .status-pending { background: var(--user-pending-bg); color: var(--user-pending-color); border: 1px solid var(--user-pending-border); }
+        .status-confirmed { background: var(--user-confirmed-bg); color: var(--user-confirmed-color); border: 1px solid var(--user-confirmed-border); }
+        
+        .link-btn { display: inline-block; margin-top: 10px; padding: 6px 12px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9em; }
+        .link-btn:hover { background: #2980b9; }
+        .deadline-badge { float: right; font-size: 0.8em; color: #c0392b; background: #fadbd8; padding: 2px 8px; border-radius: 4px; }
+
+        .btn-close { background: transparent; color: #999; font-size: 1.5em; cursor: pointer; padding: 0; border:none;}
+        
+        @media (max-width: 480px) { .day-cell { height: 110px; } .calendar-year { gap: 20px; } .tag { font-size: 10px; } }
+    </style>
+</head>
+<body>
+
+    <h1>📅 2026年 越野跑賽事曆</h1>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="box-sample" style="color:var(--holiday-color); background:var(--holiday-bg);">公眾假期</div>
+        </div>
+        <div class="legend-item">
+            <div class="box-sample" style="color:var(--user-pending-color); background:var(--user-pending-bg); border:1px solid var(--user-pending-border);">越野賽 (未報名/未確定)</div>
+        </div>
+        <div class="legend-item">
+            <div class="box-sample" style="color:var(--user-confirmed-color); background:var(--user-confirmed-bg); border:1px solid var(--user-confirmed-border);">已確認行程</div>
+        </div>
+    </div>
+
+    <div id="calendar-container" class="calendar-year"></div>
+
+    <!-- Details Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalDate"></div>
+                <button class="btn-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ==========================================
+    // 1. 公眾假期
+    // ==========================================
+    const holidays2026 = {
+        "1-1": "元旦", "2-17": "農曆年初一", "2-18": "農曆年初二", "2-19": "農曆年初三",
+        "4-3": "耶穌受難節", "4-4": "受難節翌日", "4-6": "清明節翌日", "4-7": "復活節週一",
+        "5-1": "勞動節", "5-25": "佛誕翌日", "6-19": "端午節", "7-1": "特區紀念日",
+        "9-26": "中秋節翌日", "10-1": "國慶日", "10-19": "重陽節翌日", 
+        "12-25": "聖誕節", "12-26": "聖誕節翌日"
+    };
+
+    // ==========================================
+    // 2. 越野賽事資料庫 (Trail Only)
+    // ==========================================
+    const myEvents2026 = [
+        // 1月
+        //{ date: "1-22", title: "HK100 The Third", status: "pending", details: "距離: 33K\n地點: 西貢", link: "https://hk100ultra.com/the-third/", deadline: "需參閱官網" },
+        //{ date: "1-23", title: "HK100 The Half", status: "pending", details: "距離: 56K\n地點: 西貢", link: "https://hk100ultra.com/the-half/", deadline: "需參閱官網" },
+        //{ date: "1-24", title: "HK100", status: "pending", details: "距離: 103K\n地點: 西貢", link: "https://hk100ultra.com/", deadline: "需參閱官網" },
+        { date: "1-18", title: "香港渣打馬拉松", status: "Confirmed", details: "距離: 10k,半馬,全馬\n地點: ", link: "https://www.hkmarathon.com/zh-hant", deadline: "需參閱官網" },
+		{ date: "1-24", title: "環島行練習", status: "Confirmed", details: "距離: CP3-6\n地點: 港島徑", link: "https://hike.greenpower.org.hk/", deadline: "需參閱官網" },
+		{ date: "1-31", title: "綠色力量環島行", status: "Confirmed", details: "距離: 10/25/50K\n地點: 港島徑", link: "https://hike.greenpower.org.hk/", deadline: "需參閱官網" },
+        //{ date: "1-31", title: "Gurkha Trailblazer", status: "pending", details: "距離: 12/30K\n地點: 流水響", link: "https://gurkhatrailblazer.com/", deadline: "需參閱官網" },
+        //{ date: "1-31", title: "Spark Run", status: "pending", details: "距離: 25/50K\n地點: 西貢", link: "https://www.sephk.com/sparkrun/", deadline: "需參閱官網" },
+
+        // 2月
+        { date: "2-1", title: "Spark Run", status: "pending", details: "距離: 8.5/14.5K\n地點: 西貢", link: "https://www.sephk.com/sparkrun/", deadline: "需參閱官網" },
+        { date: "2-1", title: "Fat Mak Trail Race", status: "pending", details: "距離: 14/35K\n地點: 城門", link: "https://www.noracenogoal.com/fmtr-2026", deadline: "需參閱官網" },
+        { date: "2-7", title: "HK50 West", status: "pending", details: "距離: 11/25/55K\n地點: 城門", link: "https://www.actionasiaevents.com/our-events/upcoming-events/2026-hk50-west-race-3-hk50-series/event-info-%E8%B3%BD%E4%BA%8B%E7%B0%A1%E4%BB%8B.html", deadline: "需參閱官網" },
+        { date: "2-7", title: "高峰對決沈雲山", status: "pending", details: "距離: 2.6K\n地點: 觀塘", link: "https://www.thepeakrunner.com/%E6%B1%BA%E6%88%B0%E6%B2%88%E9%9B%B2%E5%B1%B1", deadline: "需參閱官網" },
+        { date: "2-8", title: "山野之王 (西貢)", status: "pending", details: "距離: 21.8/35.9K\n地點: 北潭涌", link: "https://www.seyonasia.com/koth.php", deadline: "需參閱官網" },
+        { date: "2-8", title: "迷你四徑@港島徑", status: "pending", details: "距離: 16.4K\n地點: 香港仔", link: "https://www.fourtrailsmini.com/zh/%e8%b3%bd%e4%ba%8b/%e9%a6%99%e6%b8%af%e5%b3%b6/?lang=zh", deadline: "需參閱官網" },
+        { date: "2-8", title: "四神記 - 虎躍", status: "pending", details: "距離: 8/14/20K\n地點: 大帽山", link: "https://rundaevents.com/tiger-leap-2025/", deadline: "需參閱官網" },
+        { date: "2-15", title: "Touge Fifty 峠50", status: "pending", details: "距離: 18/40K\n地點: 北潭涌", link: "https://www.noracenogoal.com/t50-2026", deadline: "需參閱官網" },
+        { date: "2-19", title: "Namedsport 川龍越野", status: "pending", details: "距離: 8/21/42K\n地點: 大帽山", link: "https://www.life-fever.com/chuenlung2026", deadline: "需參閱官網" },
+        { date: "2-19", title: "SCARPA 馬初三", status: "pending", details: "距離: 13/20K\n地點: 大潭", link: "https://www.wildtrekhk.com/home-%E4%B8%BB%E9%A0%81", deadline: "需參閱官網" },
+        { date: "2-27", title: "The 9 Dragons", status: "pending", details: "距離: 25/50K/50mi\n地點: 大埔頭", link: "https://www.the9dragons.asia/", deadline: "需參閱官網" },
+        { date: "2-28", title: "Sai Kung 50", status: "pending", details: "距離: 13/22/35/54K\n地點: 北潭涌", link: "https://www.actionasiaevents.com/our-events/2026-sai-kung-50-race-4-hk50-series/overview-%E7%B2%BE%E8%8F%AF%E7%89%87%E6%AE%B5.html#content", deadline: "需參閱官網" },
+
+        // 3月
+        { date: "3-1", title: "四神記 - 青龍騰", status: "pending", details: "距離: 8/14/20K\n地點: 大潭", link: "https://rundaevents.com/dragon-soar/", deadline: "需參閱官網" },
+        { date: "3-1", title: "Sai Kung Speed", status: "pending", details: "距離: 15/36K\n地點: 北潭涌", link: "https://www.noracenogoal.com/sks-2026", deadline: "需參閱官網" },
+        { date: "3-1", title: "迷你四徑@鳯凰徑", status: "pending", details: "距離: 13.5K\n地點: 梅窩", link: "https://www.fourtrailsmini.com/zh/%e8%b3%bd%e4%ba%8b/%e9%b3%af%e5%87%b0%e5%be%91/?lang=zh", deadline: "需參閱官網" },
+        { date: "3-6", title: "Victoria 162", status: "pending", details: "距離: 25-162K\n地點: 東涌 (3日賽)", link: "https://www.victoria162.hk/", deadline: "需參閱官網" },
+        { date: "3-14", title: "Action Asia 淺水灣", status: "pending", details: "距離: 9/14K\n地點: 淺水灣", link: "https://www.actionasiaevents.com/our-events/upcoming-events/2026-action-sprint-trail-series-repulse-bay/overview-%E7%B2%BE%E8%8F%AF%E7%89%87%E6%AE%B5.html#content", deadline: "需參閱官網" },
+        { date: "3-15", title: "時光隧道越野賽", status: "pending", details: "距離: 15/26K\n地點: 大棠", link: "https://www.noracenogoal.com/str-2026", deadline: "需參閱官網" },
+        { date: "3-15", title: "RunAround 帽草針", status: "pending", details: "距離: 16K\n地點: 大帽山", link: "https://in.njuko.com/run-around-hgn-20261760877228789?currentPage=select-competition", deadline: "需參閱官網" },
+        { date: "3-15", title: "AirFly Trail Race", status: "pending", details: "距離: 20/30K\n地點: 牛池灣", link: "https://www.airflytrailrace.com/", deadline: "需參閱官網" },
+        { date: "3-22", title: "揹水一戰", status: "pending", details: "距離: 7/15/30K\n地點: 港島徑", link: "https://raceforwater.adropoflife.org/", deadline: "需參閱官網" },
+        { date: "3-22", title: "山野之王 (港島)", status: "pending", details: "距離: 18.3/31.2K\n地點: 淺水灣", link: "https://www.seyonasia.com/koth.php", deadline: "需參閱官網" },
+        { date: "3-29", title: "迷你四徑@麥理浩徑", status: "pending", details: "距離: 16K\n地點: 城門", link: "https://www.fourtrailsmini.com/zh/%e8%b3%bd%e4%ba%8b/%e9%ba%a5%e7%90%86%e6%b5%a9%e5%be%91/?lang=zh", deadline: "需參閱官網" },
+        { date: "3-29", title: "Trail X", status: "pending", details: "距離: 16/35K\n地點: 大埔頭", link: "https://www.noracenogoal.com/trailx-2026", deadline: "需參閱官網" },
+        { date: "3-29", title: "Healthy Hike & Run", status: "pending", details: "距離: 5/13/19K\n地點: 大棠", link: "https://www.actionasiaevents.com/our-events/2026-healthy-hike-and-run-tai-lam-hong-kong/overview-%E7%B2%BE%E8%8F%AF%E7%89%87%E6%AE%B5.html#content", deadline: "需參閱官網" },
+
+        // 4月
+        { date: "4-11", title: "香港五峰 HK 5 Peaks", status: "pending", details: "距離: 21/30K\n地點: 大潭", link: "https://www.mountainrangehk.com/", deadline: "需參閱官網" },
+        { date: "4-12", title: "山野之王 (大埔)", status: "pending", details: "距離: 16.9/37.1K\n地點: 大埔", link: "https://www.seyonasia.com/koth.php", deadline: "需參閱官網" },
+        { date: "4-12", title: "Action Asia 西貢", status: "pending", details: "距離: 12/18K\n地點: 北潭涌", link: "https://www.actionasiaevents.com/our-events/2026-action-sprint-trail-series-sai-kung/overview-%E7%B2%BE%E8%8F%AF%E7%89%87%E6%AE%B5.html#content", deadline: "需參閱官網" },
+        { date: "4-19", title: "Round the Lion", status: "pending", details: "距離: 21K\n地點: TBC", link: "https://www.facebook.com/roundthelion", deadline: "需參閱官網" },
+        { date: "4-26", title: "四神記 - 玄武鎮", status: "pending", details: "距離: 8/14/20K\n地點: 大棠", link: "https://rundaevents.com/black-tortoise-town/", deadline: "需參閱官網" },
+        { date: "4-26", title: "迷你四徑@衛奕信徑", status: "pending", details: "距離: 17.4K\n地點: 大埔頭", link: "https://www.fourtrailsmini.com/zh/%e8%b3%bd%e4%ba%8b/rmac-%e8%a1%9b%e5%a5%95%e4%bf%a1%e5%be%91/?lang=zh", deadline: "需參閱官網" },
+        { date: "4-26", title: "COUNTRY OF ORIGIN", status: "pending", details: "距離: 10/30K\n地點: 梅窩", link: "https://www.racebase.asia/the-last-ever-country-of-origin-race-ever", deadline: "需參閱官網" },
+        { date: "4-26", title: "Action Asia 愉景灣", status: "pending", details: "距離: 9/12K\n地點: 愉景灣", link: "https://www.actionasiaevents.com/our-events/2026-action-sprint-trail-series-dbay-hong-kong/overview-%E7%B2%BE%E8%8F%AF%E7%89%87%E6%AE%B5.html#content", deadline: "需參閱官網" },
+
+        // 5月 & 6月
+        { date: "5-1", title: "Hard as...", status: "pending", details: "距離: 7/15K\n地點: 清水灣", link: "https://www.racebase.asia/hard-as", deadline: "需參閱官網" },
+        { date: "6-14", title: "決戰東洋之巔", status: "pending", details: "距離: 15.3K\n地點: 獅子山公園", link: "https://www.raceresults.com.hk/event/436", deadline: "需參閱官網" }
+    ];
+
+    const modal = document.getElementById('eventModal');
+    const container = document.getElementById('calendar-container');
+
+    // Group events by date
+    function groupEventsByDate() {
+        const grouped = {};
+        myEvents2026.forEach(event => {
+            if (!grouped[event.date]) {
+                grouped[event.date] = [];
+            }
+            grouped[event.date].push(event);
+        });
+        return grouped;
+    }
+
+    const eventsByDate = groupEventsByDate();
+
+    function initCalendar() {
+        container.innerHTML = '';
+        const months = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+        const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
+
+        for (let m = 0; m < 12; m++) {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'month-container';
+            
+            const header = document.createElement('div');
+            header.className = 'month-header';
+            header.innerText = months[m];
+            monthDiv.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'days-grid';
+
+            weekDays.forEach(wd => {
+                const wdLabel = document.createElement('div');
+                wdLabel.className = 'day-label';
+                wdLabel.innerText = wd;
+                if(wd === "日" || wd === "六") wdLabel.style.color = "#c0392b";
+                grid.appendChild(wdLabel);
+            });
+
+            const firstDay = new Date(2026, m, 1).getDay();
+            const daysInMonth = new Date(2026, m + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateKey = `${m+1}-${d}`;
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                
+                const dayOfWeek = new Date(2026, m, d).getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) cell.classList.add('is-weekend');
+
+                const holidayName = holidays2026[dateKey];
+                const myEventsOnThisDay = eventsByDate[dateKey] || [];
+
+                if (holidayName) cell.classList.add('type-holiday');
+                
+                // 日期
+                const numSpan = document.createElement('span');
+                numSpan.className = 'day-number';
+                numSpan.innerText = d;
+                cell.appendChild(numSpan);
+
+                // Holiday
+                if (holidayName) {
+                    const tag = document.createElement('div');
+                    tag.className = 'tag tag-holiday';
+                    tag.innerText = holidayName;
+                    cell.appendChild(tag);
+                }
+
+                // Events
+                myEventsOnThisDay.forEach(evt => {
+                    const tag = document.createElement('div');
+                    tag.innerText = evt.title;
+                    tag.className = evt.status === 'pending' ? 'tag tag-user-pending' : 'tag tag-user-confirmed';
+                    cell.appendChild(tag);
+                });
+
+                if(holidayName || myEventsOnThisDay.length > 0) {
+                    cell.onclick = () => showDetails(m+1, d, holidayName, myEventsOnThisDay);
+                }
+                
+                grid.appendChild(cell);
+            }
+            monthDiv.appendChild(grid);
+            container.appendChild(monthDiv);
+        }
+    }
+
+    function showDetails(month, day, hol, evts) {
+        document.getElementById('modalDate').innerText = `${month}月${day}日 詳細資訊`;
+        let contentHtml = '';
+
+        if(hol) {
+            contentHtml += `
+            <div class="info-row">
+                <span class="info-label">🔴 公眾假期</span>
+                <div class="info-value" style="color:var(--holiday-color); font-weight:bold;">${hol}</div>
+            </div>`;
+        }
+
+        if(evts && evts.length > 0) {
+            evts.forEach((evt, index) => {
+                const statusClass = evt.status === 'pending' ? 'status-pending' : 'status-confirmed';
+                const statusText = evt.status === 'pending' ? '⚠️ 未報名/未確定' : '✅ 已確認行程';
+                
+                let linkHtml = '';
+                if(evt.link) {
+                    linkHtml = `<a href="${evt.link}" target="_blank" class="link-btn">🔗 前往賽事官網</a>`;
+                }
+
+                let deadlineHtml = '';
+                if(evt.deadline) {
+                    deadlineHtml = `<span class="deadline-badge">截止: ${evt.deadline}</span>`;
+                }
+                
+                contentHtml += `
+                <div class="info-row">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="info-label">賽事 ${evts.length > 1 ? `#${index + 1}` : ''}</span>
+                        ${deadlineHtml}
+                    </div>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                    <div class="info-value" style="font-weight:bold; margin-top:8px;">${evt.title}</div>
+                    <div class="info-value" style="margin-top:8px;">${evt.details || '無詳細內容'}</div>
+                    ${linkHtml}
+                </div>`;
+            });
+        }
+
+        document.getElementById('modalContent').innerHTML = contentHtml;
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(e) { if(e.target == modal) closeModal(); }
+    initCalendar();
+</script>
+</body>
+</html>

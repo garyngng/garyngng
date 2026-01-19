@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Devotional Bible Plan</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sub: #666;
+            --accent: #3498db;
+            --accent-hover: #2980b9;
+            --success: #27ae60;
+            --border: #e1e4e8;
+            --note-bg: #fff9c4;
+            --btn-bg: #f8f9fa;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a1a;
+                --card-bg: #2d2d2d;
+                --text-main: #e0e0e0;
+                --text-sub: #a0a0a0;
+                --border: #404040;
+                --note-bg: #3d3d30;
+                --btn-bg: #383838;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Header & Controls */
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; color: var(--accent); }
+        
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover { background-color: var(--border); }
+        
+        .primary-btn {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .primary-btn:hover { background-color: var(--accent-hover); }
+
+        /* Search Bar */
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            background: var(--btn-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .progress-bar-bg {
+            flex-grow: 1;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .stats-text { font-size: 0.9rem; font-weight: bold; white-space: nowrap; }
+
+        /* List Items */
+        .day-item {
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .checkbox-wrapper input {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--success);
+        }
+
+        .day-info {
+            min-width: 90px;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+
+        .readings {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+        .readings .en { display: block; font-size: 0.85rem; color: var(--text-sub); margin-top: 2px; }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-icon-btn {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            border-radius: 15px;
+        }
+
+        /* Notes Section */
+        details {
+            margin-top: 10px;
+            margin-left: 38px; /* Align with text */
+            width: calc(100% - 38px);
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 0.85rem;
+            user-select: none;
+            margin-bottom: 5px;
+            list-style: none; /* Hide default triangle */
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+        
+        summary::before {
+            content: '+';
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+        details[open] summary::before { content: '-'; }
+
+        textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--note-bg);
+            color: var(--text-main);
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        /* States */
+        .completed .readings { text-decoration: line-through; opacity: 0.6; }
+        .today-highlight { 
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.1) 0%, transparent 100%);
+            border-left: 4px solid var(--accent);
+            padding-left: 10px;
+            margin-left: -14px; /* compensate padding */
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .day-header { flex-wrap: wrap; }
+            .readings { width: 100%; margin-bottom: 5px; margin-left: 38px;}
+            .checkbox-wrapper, .day-info { margin-bottom: 5px; }
+            .actions { margin-left: 38px; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>2026 讀經筆記系統</h1>
+            <span style="font-size: 0.85rem; color: var(--text-sub);">Bible Reading & Journaling</span>
+        </div>
+        <div class="toolbar">
+            <button onclick="backupData()">💾 備份 (Export)</button>
+            <button onclick="document.getElementById('importFile').click()">📂 還原 (Import)</button>
+            <input type="file" id="importFile" style="display:none" onchange="restoreData(this)">
+            <button class="primary-btn" id="jumpBtn">📍 今天</button>
+        </div>
+    </header>
+
+    <div class="progress-section">
+        <div class="progress-bar-bg">
+            <div id="progressBar" class="progress-bar-fill"></div>
+        </div>
+        <div class="stats-text" id="statsText">0% Completed</div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 搜尋書卷 (例如: 創世記, John, Psalms...)">
+    </div>
+
+    <div id="readingList">
+        <!-- JS renders items here -->
+    </div>
+</div>
+
+<script>
+    // --- Data ---
+    // (為了節省篇幅，這裡使用前面的資料結構，您可以將上一段代碼的 planData 完整複製到這裡)
+    const planData = [
+        {"day": 1, "zh": "創世記 1-3", "en": "Genesis 1-3", "ref": "Genesis+1-3"}, {"day": 2, "zh": "創世記 4-6", "en": "Genesis 4-6", "ref": "Genesis+4-6"}, {"day": 3, "zh": "創世記 7-9", "en": "Genesis 7-9", "ref": "Genesis+7-9"}, {"day": 4, "zh": "創世記 10-13", "en": "Genesis 10-13", "ref": "Genesis+10-13"}, {"day": 5, "zh": "創世記 14-16", "en": "Genesis 14-16", "ref": "Genesis+14-16"}, {"day": 6, "zh": "創世記 17-19", "en": "Genesis 17-19", "ref": "Genesis+17-19"}, {"day": 7, "zh": "創世記 20-22", "en": "Genesis 20-22", "ref": "Genesis+20-22"}, {"day": 8, "zh": "創世記 23-26", "en": "Genesis 23-26", "ref": "Genesis+23-26"}, {"day": 9, "zh": "創世記 27-29", "en": "Genesis 27-29", "ref": "Genesis+27-29"}, {"day": 10, "zh": "創世記 30-32", "en": "Genesis 30-32", "ref": "Genesis+30-32"}, {"day": 11, "zh": "創世記 33-35", "en": "Genesis 33-35", "ref": "Genesis+33-35"}, {"day": 12, "zh": "創世記 36-39", "en": "Genesis 36-39", "ref": "Genesis+36-39"}, {"day": 13, "zh": "創世記 40-42", "en": "Genesis 40-42", "ref": "Genesis+40-42"}, {"day": 14, "zh": "創世記 43-45", "en": "Genesis 43-45", "ref": "Genesis+43-45"}, {"day": 15, "zh": "創世記 46-48", "en": "Genesis 46-48", "ref": "Genesis+46-48"}, {"day": 16, "zh": "創世記 49-50; 出埃及記 1-2", "en": "Genesis 49-50; Exodus 1-2", "ref": "Genesis+49-50;+Exodus+1-2"}, {"day": 17, "zh": "出埃及記 3-5", "en": "Exodus 3-5", "ref": "Exodus+3-5"}, {"day": 18, "zh": "出埃及記 6-8", "en": "Exodus 6-8", "ref": "Exodus+6-8"}, {"day": 19, "zh": "出埃及記 9-11", "en": "Exodus 9-11", "ref": "Exodus+9-11"}, {"day": 20, "zh": "出埃及記 12-15", "en": "Exodus 12-15", "ref": "Exodus+12-15"}, {"day": 21, "zh": "出埃及記 16-18", "en": "Exodus 16-18", "ref": "Exodus+16-18"}, {"day": 22, "zh": "出埃及記 19-21", "en": "Exodus 19-21", "ref": "Exodus+19-21"}, {"day": 23, "zh": "出埃及記 22-24", "en": "Exodus 22-24", "ref": "Exodus+22-24"}, {"day": 24, "zh": "出埃及記 25-28", "en": "Exodus 25-28", "ref": "Exodus+25-28"}, {"day": 25, "zh": "出埃及記 29-31", "en": "Exodus 29-31", "ref": "Exodus+29-31"}, {"day": 26, "zh": "出埃及記 32-34", "en": "Exodus 32-34", "ref": "Exodus+32-34"}, {"day": 27, "zh": "出埃及記 35-37", "en": "Exodus 35-37", "ref": "Exodus+35-37"}, {"day": 28, "zh": "出埃及記 38-40; 利未記 1", "en": "Exodus 38-40; Leviticus 1", "ref": "Exodus+38-40;+Leviticus+1"}, {"day": 29, "zh": "利未記 2-4", "en": "Leviticus 2-4", "ref": "Leviticus+2-4"}, {"day": 30, "zh": "利未記 5-7", "en": "Leviticus 5-7", "ref": "Leviticus+5-7"}, {"day": 31, "zh": "利未記 8-10", "en": "Leviticus 8-10", "ref": "Leviticus+8-10"}, {"day": 32, "zh": "利未記 11-14", "en": "Leviticus 11-14", "ref": "Leviticus+11-14"}, {"day": 33, "zh": "利未記 15-17", "en": "Leviticus 15-17", "ref": "Leviticus+15-17"}, {"day": 34, "zh": "利未記 18-20", "en": "Leviticus 18-20", "ref": "Leviticus+18-20"}, {"day": 35, "zh": "利未記 21-24", "en": "Leviticus 21-24", "ref": "Leviticus+21-24"}, {"day": 36, "zh": "利未記 25-27", "en": "Leviticus 25-27", "ref": "Leviticus+25-27"}, {"day": 37, "zh": "民數記 1-3", "en": "Numbers 1-3", "ref": "Numbers+1-3"}, {"day": 38, "zh": "民數記 4-6", "en": "Numbers 4-6", "ref": "Numbers+4-6"}, {"day": 39, "zh": "民數記 7-10", "en": "Numbers 7-10", "ref": "Numbers+7-10"}, {"day": 40, "zh": "民數記 11-13", "en": "Numbers 11-13", "ref": "Numbers+11-13"}, {"day": 41, "zh": "民數記 14-16", "en": "Numbers 14-16", "ref": "Numbers+14-16"}, {"day": 42, "zh": "民數記 17-19", "en": "Numbers 17-19", "ref": "Numbers+17-19"}, {"day": 43, "zh": "民數記 20-23", "en": "Numbers 20-23", "ref": "Numbers+20-23"}, {"day": 44, "zh": "民數記 24-26", "en": "Numbers 24-26", "ref": "Numbers+24-26"}, {"day": 45, "zh": "民數記 27-29", "en": "Numbers 27-29", "ref": "Numbers+27-29"}, {"day": 46, "zh": "民數記 30-32", "en": "Numbers 30-32", "ref": "Numbers+30-32"}, {"day": 47, "zh": "民數記 33-36", "en": "Numbers 33-36", "ref": "Numbers+33-36"}, {"day": 48, "zh": "申命記 1-3", "en": "Deuteronomy 1-3", "ref": "Deuteronomy+1-3"}, {"day": 49, "zh": "申命記 4-6", "en": "Deuteronomy 4-6", "ref": "Deuteronomy+4-6"}, {"day": 50, "zh": "申命記 7-9", "en": "Deuteronomy 7-9", "ref": "Deuteronomy+7-9"}, {"day": 51, "zh": "申命記 10-13", "en": "Deuteronomy 10-13", "ref": "Deuteronomy+10-13"}, {"day": 52, "zh": "申命記 14-16", "en": "Deuteronomy 14-16", "ref": "Deuteronomy+14-16"}, {"day": 53, "zh": "申命記 17-19", "en": "Deuteronomy 17-19", "ref": "Deuteronomy+17-19"}, {"day": 54, "zh": "申命記 20-22", "en": "Deuteronomy 20-22", "ref": "Deuteronomy+20-22"}, {"day": 55, "zh": "申命記 23-26", "en": "Deuteronomy 23-26", "ref": "Deuteronomy+23-26"}, {"day": 56, "zh": "申命記 27-29", "en": "Deuteronomy 27-29", "ref": "Deuteronomy+27-29"}, {"day": 57, "zh": "申命記 30-32", "en": "Deuteronomy 30-32", "ref": "Deuteronomy+30-32"}, {"day": 58, "zh": "申命記 33-34; 約書亞記 1", "en": "Deuteronomy 33-34; Joshua 1", "ref": "Deuteronomy+33-34;+Joshua+1"}, {"day": 59, "zh": "約書亞記 2-5", "en": "Joshua 2-5", "ref": "Joshua+2-5"}, {"day": 60, "zh": "約書亞記 6-8", "en": "Joshua 6-8", "ref": "Joshua+6-8"}, {"day": 61, "zh": "約書亞記 9-11", "en": "Joshua 9-11", "ref": "Joshua+9-11"}, {"day": 62, "zh": "約書亞記 12-14", "en": "Joshua 12-14", "ref": "Joshua+12-14"}, {"day": 63, "zh": "約書亞記 15-18", "en": "Joshua 15-18", "ref": "Joshua+15-18"}, {"day": 64, "zh": "約書亞記 19-21", "en": "Joshua 19-21", "ref": "Joshua+19-21"}, {"day": 65, "zh": "約書亞記 22-24", "en": "Joshua 22-24", "ref": "Joshua+22-24"}, {"day": 66, "zh": "士師記 1-3", "en": "Judges 1-3", "ref": "Judges+1-3"}, {"day": 67, "zh": "士師記 4-7", "en": "Judges 4-7", "ref": "Judges+4-7"}, {"day": 68, "zh": "士師記 8-10", "en": "Judges 8-10", "ref": "Judges+8-10"}, {"day": 69, "zh": "士師記 11-13", "en": "Judges 11-13", "ref": "Judges+11-13"}, {"day": 70, "zh": "士師記 14-17", "en": "Judges 14-17", "ref": "Judges+14-17"}, {"day": 71, "zh": "士師記 18-20", "en": "Judges 18-20", "ref": "Judges+18-20"}, {"day": 72, "zh": "士師記 21; 路得記 1-2", "en": "Judges 21; Ruth 1-2", "ref": "Judges+21;+Ruth+1-2"}, {"day": 73, "zh": "路得記 3-4; 撒母耳記上 1", "en": "Ruth 3-4; 1 Samuel 1", "ref": "Ruth+3-4;+1+Samuel+1"}, {"day": 74, "zh": "撒母耳記上 2-5", "en": "1 Samuel 2-5", "ref": "1+Samuel+2-5"}, {"day": 75, "zh": "撒母耳記上 6-8", "en": "1 Samuel 6-8", "ref": "1+Samuel+6-8"}, {"day": 76, "zh": "撒母耳記上 9-11", "en": "1 Samuel 9-11", "ref": "1+Samuel+9-11"}, {"day": 77, "zh": "撒母耳記上 12-14", "en": "1 Samuel 12-14", "ref": "1+Samuel+12-14"}, {"day": 78, "zh": "撒母耳記上 15-18", "en": "1 Samuel 15-18", "ref": "1+Samuel+15-18"}, {"day": 79, "zh": "撒母耳記上 19-21", "en": "1 Samuel 19-21", "ref": "1+Samuel+19-21"}, {"day": 80, "zh": "撒母耳記上 22-24", "en": "1 Samuel 22-24", "ref": "1+Samuel+22-24"}, {"day": 81, "zh": "撒母耳記上 25-27", "en": "1 Samuel 25-27", "ref": "1+Samuel+25-27"}, {"day": 82, "zh": "撒母耳記上 28-31", "en": "1 Samuel 28-31", "ref": "1+Samuel+28-31"}, {"day": 83, "zh": "撒母耳記下 1-3", "en": "2 Samuel 1-3", "ref": "2+Samuel+1-3"}, {"day": 84, "zh": "撒母耳記下 4-6", "en": "2 Samuel 4-6", "ref": "2+Samuel+4-6"}, {"day": 85, "zh": "撒母耳記下 7-9", "en": "2 Samuel 7-9", "ref": "2+Samuel+7-9"}, {"day": 86, "zh": "撒母耳記下 10-13", "en": "2 Samuel 10-13", "ref": "2+Samuel+10-13"}, {"day": 87, "zh": "撒母耳記下 14-16", "en": "2 Samuel 14-16", "ref": "2+Samuel+14-16"}, {"day": 88, "zh": "撒母耳記下 17-19", "en": "2 Samuel 17-19", "ref": "2+Samuel+17-19"}, {"day": 89, "zh": "撒母耳記下 20-22", "en": "2 Samuel 20-22", "ref": "2+Samuel+20-22"}, {"day": 90, "zh": "撒母耳記下 23-24; 列王紀上 1-2", "en": "2 Samuel 23-24; 1 Kings 1-2", "ref": "2+Samuel+23-24;+1+Kings+1-2"}, {"day": 91, "zh": "列王紀上 3-5", "en": "1 Kings 3-5", "ref": "1+Kings+3-5"}, {"day": 92, "zh": "列王紀上 6-8", "en": "1 Kings 6-8", "ref": "1+Kings+6-8"}, {"day": 93, "zh": "列王紀上 9-11", "en": "1 Kings 9-11", "ref": "1+Kings+9-11"}, {"day": 94, "zh": "列王紀上 12-15", "en": "1 Kings 12-15", "ref": "1+Kings+12-15"}, {"day": 95, "zh": "列王紀上 16-18", "en": "1 Kings 16-18", "ref": "1+Kings+16-18"}, {"day": 96, "zh": "列王紀上 19-21", "en": "1 Kings 19-21", "ref": "1+Kings+19-21"}, {"day": 97, "zh": "列王紀上 22; 列王紀下 1-2", "en": "1 Kings 22; 2 Kings 1-2", "ref": "1+Kings+22;+2+Kings+1-2"}, {"day": 98, "zh": "列王紀下 3-6", "en": "2 Kings 3-6", "ref": "2+Kings+3-6"}, {"day": 99, "zh": "列王紀下 7-9", "en": "2 Kings 7-9", "ref": "2+Kings+7-9"}, {"day": 100, "zh": "列王紀下 10-12", "en": "2 Kings 10-12", "ref": "2+Kings+10-12"}, {"day": 101, "zh": "列王紀下 13-16", "en": "2 Kings 13-16", "ref": "2+Kings+13-16"}, {"day": 102, "zh": "列王紀下 17-19", "en": "2 Kings 17-19", "ref": "2+Kings+17-19"}, {"day": 103, "zh": "列王紀下 20-22", "en": "2 Kings 20-22", "ref": "2+Kings+20-22"}, {"day": 104, "zh": "列王紀下 23-25", "en": "2 Kings 23-25", "ref": "2+Kings+23-25"}, {"day": 105, "zh": "歷代志上 1-4", "en": "1 Chronicles 1-4", "ref": "1+Chronicles+1-4"}, {"day": 106, "zh": "歷代志上 5-7", "en": "1 Chronicles 5-7", "ref": "1+Chronicles+5-7"}, {"day": 107, "zh": "歷代志上 8-10", "en": "1 Chronicles 8-10", "ref": "1+Chronicles+8-10"}, {"day": 108, "zh": "歷代志上 11-13", "en": "1 Chronicles 11-13", "ref": "1+Chronicles+11-13"}, {"day": 109, "zh": "歷代志上 14-17", "en": "1 Chronicles 14-17", "ref": "1+Chronicles+14-17"}, {"day": 110, "zh": "歷代志上 18-20", "en": "1 Chronicles 18-20", "ref": "1+Chronicles+18-20"}, {"day": 111, "zh": "歷代志上 21-23", "en": "1 Chronicles 21-23", "ref": "1+Chronicles+21-23"}, {"day": 112, "zh": "歷代志上 24-26", "en": "1 Chronicles 24-26", "ref": "1+Chronicles+24-26"}, {"day": 113, "zh": "歷代志上 27-29; 歷代志下 1", "en": "1 Chronicles 27-29; 2 Chronicles 1",         "ref": "Mark+14-16;+Luke+1"},
+        {"day": 300, "zh": "路加福音 2-4", "en": "Luke 2-4", "ref": "Luke+2-4"},
+        {"day": 301, "zh": "路加福音 5-7", "en": "Luke 5-7", "ref": "Luke+5-7"},
+        {"day": 302, "zh": "路加福音 8-10", "en": "Luke 8-10", "ref": "Luke+8-10"},
+        {"day": 303, "zh": "路加福音 11-14", "en": "Luke 11-14", "ref": "Luke+11-14"},
+        {"day": 304, "zh": "路加福音 15-17", "en": "Luke 15-17", "ref": "Luke+15-17"},
+        {"day": 305, "zh": "路加福音 18-20", "en": "Luke 18-20", "ref": "Luke+18-20"},
+        {"day": 306, "zh": "路加福音 21-23", "en": "Luke 21-23", "ref": "Luke+21-23"},
+        {"day": 307, "zh": "路加福音 24; 約翰福音 1-3", "en": "Luke 24; John 1-3", "ref": "Luke+24;+John+1-3"},
+        {"day": 308, "zh": "約翰福音 4-6", "en": "John 4-6", "ref": "John+4-6"},
+        {"day": 309, "zh": "約翰福音 7-9", "en": "John 7-9", "ref": "John+7-9"},
+        {"day": 310, "zh": "約翰福音 10-12", "en": "John 10-12", "ref": "John+10-12"},
+        {"day": 311, "zh": "約翰福音 13-16", "en": "John 13-16", "ref": "John+13-16"},
+        {"day": 312, "zh": "約翰福音 17-19", "en": "John 17-19", "ref": "John+17-19"},
+        {"day": 313, "zh": "約翰福音 20-21; 使徒行傳 1", "en": "John 20-21; Acts 1", "ref": "John+20-21;+Acts+1"},
+        {"day": 314, "zh": "使徒行傳 2-4", "en": "Acts 2-4", "ref": "Acts+2-4"},
+        {"day": 315, "zh": "使徒行傳 5-8", "en": "Acts 5-8", "ref": "Acts+5-8"},
+        {"day": 316, "zh": "使徒行傳 9-11", "en": "Acts 9-11", "ref": "Acts+9-11"},
+        {"day": 317, "zh": "使徒行傳 12-14", "en": "Acts 12-14", "ref": "Acts+12-14"},
+        {"day": 318, "zh": "使徒行傳 15-17", "en": "Acts 15-17", "ref": "Acts+15-17"},
+        {"day": 319, "zh": "使徒行傳 18-21", "en": "Acts 18-21", "ref": "Acts+18-21"},
+        {"day": 320, "zh": "使徒行傳 22-24", "en": "Acts 22-24", "ref": "Acts+22-24"},
+        {"day": 321, "zh": "使徒行傳 25-27", "en": "Acts 25-27", "ref": "Acts+25-27"},
+        {"day": 322, "zh": "使徒行傳 28; 羅馬書 1-2", "en": "Acts 28; Romans 1-2", "ref": "Acts+28;+Romans+1-2"},
+        {"day": 323, "zh": "羅馬書 3-6", "en": "Romans 3-6", "ref": "Romans+3-6"},
+        {"day": 324, "zh": "羅馬書 7-9", "en": "Romans 7-9", "ref": "Romans+7-9"},
+        {"day": 325, "zh": "羅馬書 10-12", "en": "Romans 10-12", "ref": "Romans+10-12"},
+        {"day": 326, "zh": "羅馬書 13-15", "en": "Romans 13-15", "ref": "Romans+13-15"},
+        {"day": 327, "zh": "羅馬書 16; 哥林多前書 1-3", "en": "Romans 16; 1 Corinthians 1-3", "ref": "Romans+16;+1+Corinthians+1-3"},
+        {"day": 328, "zh": "哥林多前書 4-6", "en": "1 Corinthians 4-6", "ref": "1+Corinthians+4-6"},
+        {"day": 329, "zh": "哥林多前書 7-9", "en": "1 Corinthians 7-9", "ref": "1+Corinthians+7-9"},
+        {"day": 330, "zh": "哥林多前書 10-12", "en": "1 Corinthians 10-12", "ref": "1+Corinthians+10-12"},
+        {"day": 331, "zh": "哥林多前書 13-16", "en": "1 Corinthians 13-16", "ref": "1+Corinthians+13-16"},
+        {"day": 332, "zh": "哥林多後書 1-3", "en": "2 Corinthians 1-3", "ref": "2+Corinthians+1-3"},
+        {"day": 333, "zh": "哥林多後書 4-6", "en": "2 Corinthians 4-6", "ref": "2+Corinthians+4-6"},
+        {"day": 334, "zh": "哥林多後書 7-10", "en": "2 Corinthians 7-10", "ref": "2+Corinthians+7-10"},
+        {"day": 335, "zh": "哥林多後書 11-13", "en": "2 Corinthians 11-13", "ref": "2+Corinthians+11-13"},
+        {"day": 336, "zh": "加拉太書 1-3", "en": "Galatians 1-3", "ref": "Galatians+1-3"},
+        {"day": 337, "zh": "加拉太書 4-6", "en": "Galatians 4-6", "ref": "Galatians+4-6"},
+        {"day": 338, "zh": "以弗所書 1-4", "en": "Ephesians 1-4", "ref": "Ephesians+1-4"},
+        {"day": 339, "zh": "以弗所書 5-6; 腓立比書 1", "en": "Ephesians 5-6; Philippians 1", "ref": "Ephesians+5-6;+Philippians+1"},
+        {"day": 340, "zh": "腓立比書 2-4", "en": "Philippians 2-4", "ref": "Philippians+2-4"},
+        {"day": 341, "zh": "歌羅西書 1-3", "en": "Colossians 1-3", "ref": "Colossians+1-3"},
+        {"day": 342, "zh": "歌羅西書 4; 帖撒羅尼迦前書 1-3", "en": "Colossians 4; 1 Thessalonians 1-3", "ref": "Colossians+4;+1+Thessalonians+1-3"},
+        {"day": 343, "zh": "帖撒羅尼迦前書 4-5; 帖撒羅尼迦後書 1", "en": "1 Thessalonians 4-5; 2 Thessalonians 1", "ref": "1+Thessalonians+4-5;+2+Thessalonians+1"},
+        {"day": 344, "zh": "帖撒羅尼迦後書 2-3; 提摩太前書 1", "en": "2 Thessalonians 2-3; 1 Timothy 1", "ref": "2+Thessalonians+2-3;+1+Timothy+1"},
+        {"day": 345, "zh": "提摩太前書 2-4", "en": "1 Timothy 2-4", "ref": "1+Timothy+2-4"},
+        {"day": 346, "zh": "提摩太前書 5-6; 提摩太後書 1-2", "en": "1 Timothy 5-6; 2 Timothy 1-2", "ref": "1+Timothy+5-6;+2+Timothy+1-2"},
+        {"day": 347, "zh": "提摩太後書 3-4; 提多書 1", "en": "2 Timothy 3-4; Titus 1", "ref": "2+Timothy+3-4;+Titus+1"},
+        {"day": 348, "zh": "提多書 2-3; 腓利門書 1", "en": "Titus 2-3; Philemon 1", "ref": "Titus+2-3;+Philemon+1"},
+        {"day": 349, "zh": "希伯來書 1-3", "en": "Hebrews 1-3", "ref": "Hebrews+1-3"},
+        {"day": 350, "zh": "希伯來書 4-7", "en": "Hebrews 4-7", "ref": "Hebrews+4-7"},
+        {"day": 351, "zh": "希伯來書 8-10", "en": "Hebrews 8-10", "ref": "Hebrews+8-10"},
+        {"day": 352, "zh": "希伯來書 11-13", "en": "Hebrews 11-13", "ref": "Hebrews+11-13"},
+        {"day": 353, "zh": "雅各書 1-3", "en": "James 1-3", "ref": "James+1-3"},
+        {"day": 354, "zh": "雅各書 4-5; 彼得前書 1-2", "en": "James 4-5; 1 Peter 1-2", "ref": "James+4-5;+1+Peter+1-2"},
+        {"day": 355, "zh": "彼得前書 3-5", "en": "1 Peter 3-5", "ref": "1+Peter+3-5"},
+        {"day": 356, "zh": "彼得後書 1-3", "en": "2 Peter 1-3", "ref": "2+Peter+1-3"},
+        {"day": 357, "zh": "約翰一書 1-3", "en": "1 John 1-3", "ref": "1+John+1-3"},
+        {"day": 358, "zh": "約翰一書 4-5; 約翰二書 1; 約翰三書 1", "en": "1 John 4-5; 2 John 1; 3 John 1", "ref": "1+John+4-5;+2+John+1;+3+John+1"},
+        {"day": 359, "zh": "猶大書 1; 啟示錄 1-2", "en": "Jude 1; Revelation 1-2", "ref": "Jude+1;+Revelation+1-2"},
+        {"day": 360, "zh": "啟示錄 3-5", "en": "Revelation 3-5", "ref": "Revelation+3-5"},
+        {"day": 361, "zh": "啟示錄 6-8", "en": "Revelation 6-8", "ref": "Revelation+6-8"},
+        {"day": 362, "zh": "啟示錄 9-12", "en": "Revelation 9-12", "ref": "Revelation+9-12"},
+        {"day": 363, "zh": "啟示錄 13-15", "en": "Revelation 13-15", "ref": "Revelation+13-15"},
+        {"day": 364, "zh": "啟示錄 16-18", "en": "Revelation 16-18", "ref": "Revelation+16-18"},
+        {"day": 365, "zh": "啟示錄 19-22", "en": "Revelation 19-22", "ref": "Revelation+19-22"}
+    ];
+    
+    // 如果您沒有把完整的數據貼過來，請用這個簡單的 function 生成假數據測試 UI，
+    // 但強烈建議您把上一段的完整 planData 變數貼過來取代這裡。
+    if (planData.length < 10) {
+        console.warn("Using partial data for demo.");
+    }
+
+    // --- State Management ---
+    const STORAGE_KEY = 'bible_plan_2026_data';
+    let appData = {
+        completed: [], // array of day numbers
+        notes: {}      // object: { "1": "My note for day 1" }
+    };
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                // Migrate old format if necessary (array -> object)
+                if (Array.isArray(parsed)) {
+                    appData.completed = parsed;
+                } else {
+                    appData = { ...appData, ...parsed };
+                }
+            } catch (e) { console.error("Data load error", e); }
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        updateUIStats();
+    }
+
+    // --- Logic Helpers ---
+    const startDate = new Date('2026-01-01');
+
+    function getDayDate(dayNum) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + (dayNum - 1));
+        return d;
+    }
+
+    function isToday(date) {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+               date.getMonth() === today.getMonth() &&
+               date.getFullYear() === today.getFullYear();
+    }
+
+    function formatDate(date) {
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+    }
+
+    // --- AI Prompt Helper ---
+    function copyAiPrompt(zh, en) {
+        const prompt = `I am reading the Bible. The passage is: "${en}" (${zh}). \nPlease provide:\n1. Historical context and background.\n2. Key theological themes.\n3. One practical application for a modern Christian.\nKeep it concise and insightful.`;
+        navigator.clipboard.writeText(prompt).then(() => {
+            alert("✅ AI Prompt 已複製！\n\n您可以直接貼到 ChatGPT/Perplexity：\n" + prompt);
+        });
+    }
+
+    // --- Render ---
+    const listEl = document.getElementById('readingList');
+
+    function renderList(filterText = '') {
+        listEl.innerHTML = '';
+        const today = new Date();
+        const is2026 = today.getFullYear() === 2026;
+
+        planData.forEach(item => {
+            // Filter logic
+            if (filterText) {
+                const searchStr = (item.zh + item.en).toLowerCase();
+                if (!searchStr.includes(filterText.toLowerCase())) return;
+            }
+
+            const dayNum = item.day;
+            const date = getDayDate(dayNum);
+            const isDone = appData.completed.includes(dayNum);
+            const isTodayItem = isToday(date);
+            const hasNote = appData.notes[dayNum] && appData.notes[dayNum].trim().length > 0;
+            
+            const div = document.createElement('div');
+            div.className = `day-item ${isDone ? 'completed' : ''} ${isTodayItem ? 'today-highlight' : ''}`;
+            if (isTodayItem) div.id = 'today-anchor';
+
+            const noteContent = appData.notes[dayNum] || '';
+            const linkUrl = `https://www.biblegateway.com/passage/?search=${item.ref}&version=CUV;NIV`;
+
+            div.innerHTML = `
+                <div class="day-header">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" onchange="toggleDay(${dayNum}, this.checked)" ${isDone ? 'checked' : ''}>
+                    </div>
+                    <div class="day-info">
+                        <strong>Day ${dayNum}</strong><br>${formatDate(date)}
+                    </div>
+                    <div class="readings">
+                        ${item.zh}
+                        <span class="en">${item.en}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="action-icon-btn" onclick="copyAiPrompt('${item.zh}', '${item.en}')" title="複製 AI 提示詞">
+                            🤖 AI
+                        </button>
+                        <a href="${linkUrl}" target="_blank" class="action-icon-btn" style="text-decoration:none; border:1px solid #ddd; background:#fff; color:#333;">
+                            📖 閱讀
+                        </a>
+                    </div>
+                </div>
+                <details ${hasNote ? 'open' : ''}>
+                    <summary>
+                        ${hasNote ? '📝 編輯筆記' : '✏️ 寫筆記'} 
+                        ${hasNote ? '<span style="font-size:0.7rem; color:green;">●</span>' : ''}
+                    </summary>
+                    <textarea placeholder="領受 / 應許 / 禱告 (Auto-saved)" oninput="saveNote(${dayNum}, this.value)">${noteContent}</textarea>
+                </details>
+            `;
+            listEl.appendChild(div);
+        });
+    }
+
+    // --- Event Handlers ---
+    window.toggleDay = (day, checked) => {
+        if (checked) {
+            if (!appData.completed.includes(day)) appData.completed.push(day);
+        } else {
+            appData.completed = appData.completed.filter(d => d !== day);
+        }
+        
+        // Visual update for strike-through without re-render entire list
+        const row = document.activeElement.closest('.day-item');
+        if (row) {
+            if(checked) row.classList.add('completed');
+            else row.classList.remove('completed');
+        }
+        saveData();
+    };
+
+    window.saveNote = (day, text) => {
+        appData.notes[day] = text;
+        saveData(); // Note: Frequent saving on localstorage is fine, but could debounce if really heavy
+    };
+
+    // --- Backup / Restore ---
+    window.backupData = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "bible_plan_backup_" + new Date().toISOString().slice(0,10) + ".json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    window.restoreData = (input) => {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                if (confirm("確定要覆蓋目前的進度與筆記嗎？")) {
+                    appData = loaded;
+                    saveData();
+                    renderList();
+                    alert("還原成功！");
+                }
+            } catch (err) { alert("檔案格式錯誤"); }
+        };
+        reader.readAsText(file);
+    };
+
+    // --- Initialization ---
+    function updateUIStats() {
+        // Calculate based on FULL plan (assume 365)
+        const total = 365; 
+        const count = appData.completed.length;
+        const pct = Math.round((count / total) * 100);
+        document.getElementById('progressBar').style.width = pct + "%";
+        document.getElementById('statsText').innerText = `${count} / ${total} Days (${pct}%)`;
+    }
+
+    // Search Listener
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        renderList(e.target.value);
+    });
+
+    // Jump Button
+    document.getElementById('jumpBtn').addEventListener('click', () => {
+        const el = document.getElementById('today-anchor');
+        if(el) el.scrollIntoView({behavior: "smooth", block: "center"});
+        else alert("今天的日期不在顯示範圍內（請檢查年份或搜尋過濾器）");
+    });
+
+    // Start
+    loadData();
+    
+    // IMPORTANT: Inject the full planData here before rendering if using the template above
+    // Merging the data from the previous prompt is necessary for this to work fully.
+    // For now, it renders what is available.
+    renderList();
+    updateUIStats();
+
+    // Auto-scroll on load
+    if (new Date().getFullYear() === 2026) {
+        setTimeout(() => document.getElementById('jumpBtn').click(), 500);
+    }
+
+</script>
+
+</body>
+</html>
