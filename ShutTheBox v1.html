@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shut the Box - 雙人獨立面板版</title>
+    <style>
+        :root {
+            --wood-dark: #5c3a1e;
+            --wood-light: #8B5A2B;
+            --felt-color: #006400;
+            --tile-open: #f0e68c;
+            --tile-shut: #5e4335;
+            --p1-main: #3498db;
+            --p1-bg: rgba(52, 152, 219, 0.2);
+            --p2-main: #e74c3c;
+            --p2-bg: rgba(231, 76, 60, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            user-select: none; /* 防止連點選中文字 */
+        }
+
+        .game-container {
+            width: 95%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* 玩家面板樣式 */
+        .player-board {
+            background-color: var(--wood-light);
+            padding: 15px;
+            border-radius: 12px;
+            border: 4px solid transparent;
+            position: relative;
+            transition: all 0.3s;
+            opacity: 0.6; /* 非回合時變暗 */
+            filter: grayscale(0.3);
+        }
+
+        /* 激活狀態的面板 */
+        .player-board.active {
+            border-color: #f1c40f;
+            opacity: 1;
+            filter: grayscale(0);
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .tiles-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* 數字牌樣式 */
+        .tile {
+            width: 35px;
+            height: 55px;
+            background-color: var(--tile-open);
+            color: #333;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b3a858;
+            transition: transform 0.1s;
+        }
+
+        /* 牌被蓋上 */
+        .tile.shut {
+            background-color: var(--tile-shut);
+            color: rgba(255,255,255,0.1);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            transform: translateY(4px) !important;
+            cursor: default;
+            border: none !important;
+        }
+
+        /* 選中狀態 */
+        .tile.selected {
+            background-color: #fff;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #ccc;
+        }
+
+        /* 玩家 1 特有樣式 */
+        .board-p1 .tile.selected { border: 3px solid var(--p1-main); color: var(--p1-main); }
+        .board-p1 .player-info { color: var(--p1-main); }
+        
+        /* 玩家 2 特有樣式 */
+        .board-p2 .tile.selected { border: 3px solid var(--p2-main); color: var(--p2-main); }
+        .board-p2 .player-info { color: var(--p2-main); }
+
+        /* 中央控制區 */
+        .center-area {
+            background-color: var(--felt-color);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border: 4px solid var(--wood-dark);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .dice-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+            min-height: 50px;
+        }
+
+        .die {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            color: #333;
+        }
+
+        .msg-box {
+            min-height: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-roll { background: #f39c12; color: white; }
+        .btn-roll:hover { background: #d35400; }
+        .btn-roll:disabled { background: #7f8c8d; cursor: not-allowed; opacity: 0.7; }
+
+        .btn-ok { background: #27ae60; color: white; }
+        .btn-ok:disabled { background: #7f8c8d; opacity: 0.5; }
+
+        .btn-restart { 
+            margin-top: 20px; 
+            background: #95a5a6; 
+            color: white;
+            width: 100%;
+            padding: 12px;
+        }
+
+        /* Skip 動畫特效 */
+        .skip-anim {
+            color: #ff6b6b;
+            font-size: 20px;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    
+    <!-- 玩家 2 面板 (上方) -->
+    <div id="board-p2" class="player-board board-p2">
+        <div class="player-info">
+            <span>PLAYER 2</span>
+            <span id="score-p2">罰分: 45</span>
+        </div>
+        <div class="tiles-row" id="tiles-p2">
+            <!-- JS 生成 -->
+        </div>
+    </div>
+
+    <!-- 中央控制區 -->
+    <div class="center-area">
+        <div id="status-msg" class="msg-box">遊戲開始！P1 請擲骰</div>
+        
+        <div class="dice-display" id="dice-container"></div>
+
+        <div class="controls">
+            <button id="btn-roll-2" class="btn-roll" onclick="rollDice(2)">擲 2 顆</button>
+            <button id="btn-roll-1" class="btn-roll" onclick="rollDice(1)" style="display:none;">擲 1 顆</button>
+            <button id="btn-ok" class="btn-ok" onclick="confirmMove()" disabled>確認出牌</button>
+        </div>
+    </div>
+
+    <!-- 玩家 1 面板 (下方) -->
+    <div id="board-p1" class="player-board board-p1 active">
+        <div class="player-info">
+            <span>PLAYER 1</span>
+            <span id="score-p1">罰分: 45</span>
+        </div>
+        <div class="tiles-row" id="tiles-p1">
+            <!-- JS 生成 -->
+        </div>
+    </div>
+
+    <button class="btn-restart" onclick="initGame()">重新開始遊戲</button>
+
+</div>
+
+<script>
+    const gameState = {
+        p1: [], // Array(9) 'open', 'shut', 'selected'
+        p2: [],
+        turn: 1, // 1 or 2
+        diceTotal: 0,
+        rolling: false, // 是否正在擲骰動畫中
+        canSelect: false, // 是否允許選牌
+        consecutiveSkips: 0,
+        gameOver: false
+    };
+
+    function initGame() {
+        gameState.p1 = Array(9).fill('open');
+        gameState.p2 = Array(9).fill('open');
+        gameState.turn = 1;
+        gameState.diceTotal = 0;
+        gameState.rolling = false;
+        gameState.canSelect = false;
+        gameState.consecutiveSkips = 0;
+        gameState.gameOver = false;
+
+        renderBoard(1);
+        renderBoard(2);
+        updateScoreUI();
+        switchTurnUI();
+        
+        document.getElementById('status-msg').textContent = "P1 回合：請擲骰子";
+        document.getElementById('status-msg').className = 'msg-box';
+        document.getElementById('dice-container').innerHTML = '';
+        document.getElementById('btn-roll-2').disabled = false;
+        document.getElementById('btn-roll-1').style.display = 'none';
+        document.getElementById('btn-ok').disabled = true;
+    }
+
+    // 渲染特定玩家的面板
+    function renderBoard(player) {
+        const container = document.getElementById(`tiles-p${player}`);
+        const tilesData = player === 1 ? gameState.p1 : gameState.p2;
+        container.innerHTML = '';
+
+        tilesData.forEach((status, idx) => {
+            const num = idx + 1;
+            const el = document.createElement('div');
+            el.className = `tile ${status}`;
+            el.textContent = num;
+            
+            // 只有當前回合玩家且允許選牌時，才綁定點擊事件
+            el.onclick = () => onTileClick(player, idx);
+            container.appendChild(el);
+        });
+    }
+
+    function onTileClick(player, idx) {
+        if (gameState.gameOver) return;
+        if (player !== gameState.turn) return; // 不能點對手的牌
+        if (!gameState.canSelect) return;      // 沒擲骰子不能點
+
+        const tiles = player === 1 ? gameState.p1 : gameState.p2;
+        const currentStatus = tiles[idx];
+
+        if (currentStatus === 'shut') return;
+
+        // Toggle logic
+        if (currentStatus === 'open') {
+            tiles[idx] = 'selected';
+        } else {
+            tiles[idx] = 'open';
+        }
+
+        renderBoard(player);
+        checkSelectionMath();
+    }
+
+    // 檢查數學運算
+    function checkSelectionMath() {
+        const tiles = gameState.turn === 1 ? gameState.p1 : gameState.p2;
+        const sum = tiles.reduce((acc, status, i) => {
+            return status === 'selected' ? acc + (i + 1) : acc;
+        }, 0);
+
+        const btnOk = document.getElementById('btn-ok');
+        const msg = document.getElementById('status-msg');
+
+        if (sum === gameState.diceTotal) {
+            btnOk.disabled = false;
+            msg.textContent = "數字正確！請按確認";
+            msg.style.color = "#7fff00";
+        } else {
+            btnOk.disabled = true;
+            if (sum > gameState.diceTotal) {
+                msg.textContent = `選太多了 (${sum} > ${gameState.diceTotal})`;
+                msg.style.color = "#ff6b6b";
+            } else {
+                msg.textContent = `請湊出 ${gameState.diceTotal} 點 (目前: ${sum})`;
+                msg.style.color = "white";
+            }
+        }
+    }
+
+    function rollDice(count) {
+        if (gameState.gameOver) return;
+        
+        gameState.rolling = true;
+        
+        // 簡單骰子動畫與生成
+        const dice = [];
+        let total = 0;
+        for(let i=0; i<count; i++) {
+            const val = Math.floor(Math.random() * 6) + 1;
+            dice.push(val);
+            total += val;
+        }
+
+        gameState.diceTotal = total;
+        gameState.canSelect = true;
+
+        // 更新 UI
+        const diceHtml = dice.map(d => `<div class="die">${d}</div>`).join('');
+        document.getElementById('dice-container').innerHTML = diceHtml;
+        
+        document.getElementById('status-msg').textContent = `擲出 ${total} 點！請選牌`;
+        document.getElementById('status-msg').style.color = "white";
+        
+        // 禁用擲骰按鈕
+        document.getElementById('btn-roll-2').disabled = true;
+        document.getElementById('btn-roll-1').disabled = true;
+
+        // 檢查是否有解
+        checkPossibleMoves(total);
+    }
+
+    // 檢查當前玩家是否有解
+    function checkPossibleMoves(target) {
+        const tiles = gameState.turn === 1 ? gameState.p1 : gameState.p2;
+        const available = [];
+        tiles.forEach((t, i) => {
+            if (t === 'open') available.push(i + 1);
+        });
+
+        if (!canSum(target, available)) {
+            // 無解 -> SKIP
+            handleSkip();
+        } else {
+            // 有解 -> 重置 Skip 計數
+            // 嚴格來說是等他出牌才重置，但只要有解就不會進入 Skip 流程
+            // 如果玩家自己亂選選不出來，那是玩家問題，這裡只負責系統判斷
+        }
+    }
+
+    function handleSkip() {
+        gameState.canSelect = false;
+        gameState.consecutiveSkips++;
+        const msg = document.getElementById('status-msg');
+        
+        msg.innerHTML = `無解！P${gameState.turn} <span class="skip-anim">SKIP</span>`;
+        
+        setTimeout(() => {
+            if (gameState.consecutiveSkips >= 2) {
+                endGame("deadlock");
+            } else {
+                passTurn();
+            }
+        }, 2000);
+    }
+
+    function confirmMove() {
+        const tiles = gameState.turn === 1 ? gameState.p1 : gameState.p2;
+        
+        // 執行關牌
+        for(let i=0; i<9; i++) {
+            if (tiles[i] === 'selected') tiles[i] = 'shut';
+        }
+
+        // 成功出牌，重置 Skip 計數
+        gameState.consecutiveSkips = 0;
+
+        renderBoard(gameState.turn);
+        updateScoreUI();
+
+        // 檢查勝利 (全關)
+        if (tiles.every(t => t === 'shut')) {
+            endGame("shutbox");
+            return;
+        }
+
+        passTurn();
+    }
+
+    function passTurn() {
+        gameState.turn = gameState.turn === 1 ? 2 : 1;
+        gameState.diceTotal = 0;
+        gameState.canSelect = false;
+        
+        switchTurnUI();
+        document.getElementById('status-msg').textContent = `輪到 P${gameState.turn} (擲骰子)`;
+        document.getElementById('status-msg').className = 'msg-box'; // remove skip styles
+        document.getElementById('status-msg').style.color = "white";
+        
+        document.getElementById('dice-container').innerHTML = '';
+        document.getElementById('btn-ok').disabled = true;
+
+        // 檢查 1 顆骰子規則
+        checkOneDieRule();
+    }
+
+    function checkOneDieRule() {
+        // 檢查當前玩家的 7,8,9
+        const tiles = gameState.turn === 1 ? gameState.p1 : gameState.p2;
+        const highShut = tiles[6]==='shut' && tiles[7]==='shut' && tiles[8]==='shut';
+        
+        const btn1 = document.getElementById('btn-roll-1');
+        const btn2 = document.getElementById('btn-roll-2');
+
+        btn2.disabled = false;
+        if (highShut) {
+            btn1.style.display = 'inline-block';
+            btn1.disabled = false;
+        } else {
+            btn1.style.display = 'none';
+        }
+    }
+
+    function endGame(reason) {
+        gameState.gameOver = true;
+        const msg = document.getElementById('status-msg');
+        
+        document.getElementById('btn-roll-2').disabled = true;
+        document.getElementById('btn-roll-1').disabled = true;
+        document.getElementById('btn-ok').disabled = true;
+
+        if (reason === 'shutbox') {
+            msg.textContent = `P${gameState.turn} 完美關箱！獲勝！`;
+            msg.style.color = "#f1c40f";
+        } else {
+            // Deadlock
+            const s1 = getScore(1);
+            const s2 = getScore(2);
+            let resultText = "";
+            if (s1 < s2) resultText = "P1 獲勝 (罰分較低)";
+            else if (s2 < s1) resultText = "P2 獲勝 (罰分較低)";
+            else resultText = "平局！";
+
+            msg.innerHTML = `雙方無解！${resultText}<br><small>P1:${s1}分 / P2:${s2}分</small>`;
+            msg.style.color = "#ffaf40";
+        }
+    }
+
+    function getScore(player) {
+        const tiles = player === 1 ? gameState.p1 : gameState.p2;
+        return tiles.reduce((acc, status, i) => {
+            return status !== 'shut' ? acc + (i + 1) : acc;
+        }, 0);
+    }
+
+    function updateScoreUI() {
+        document.getElementById('score-p1').textContent = `罰分: ${getScore(1)}`;
+        document.getElementById('score-p2').textContent = `罰分: ${getScore(2)}`;
+    }
+
+    function switchTurnUI() {
+        const b1 = document.getElementById('board-p1');
+        const b2 = document.getElementById('board-p2');
+        if (gameState.turn === 1) {
+            b1.classList.add('active');
+            b2.classList.remove('active');
+        } else {
+            b1.classList.remove('active');
+            b2.classList.add('active');
+        }
+    }
+
+    // 數學邏輯
+    function canSum(target, numbers) {
+        if (target === 0) return true;
+        if (target < 0 || numbers.length === 0) return false;
+        return canSum(target - numbers[0], numbers.slice(1)) || canSum(target, numbers.slice(1));
+    }
+
+    // 啟動
+    initGame();
+
+</script>
+
+</body>
+</html>

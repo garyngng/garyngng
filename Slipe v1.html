@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Slipe Balanced - 平衡修正版</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --accent: #38bdf8;
+            --p1: #f43f5e;
+            --p2: #22d3ee;
+            --gold: #fbbf24;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+
+        .header { text-align: center; margin: 15px 0; }
+        h1 { margin: 0; font-size: 2rem; background: linear-gradient(45deg, var(--p1), var(--p2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 0.8rem; color: #94a3b8; margin-top: 5px; }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 320px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+        
+        .turn-badge { font-weight: bold; padding: 4px 12px; border-radius: 12px; font-size: 0.9rem; }
+
+        .board-wrapper {
+            position: relative;
+            padding: 10px;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            width: 310px;
+            height: 310px;
+        }
+
+        .cell {
+            background: #334155;
+            border-radius: 6px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .cell.goal { background: rgba(251, 191, 36, 0.1); border: 1px dashed var(--gold); }
+        .cell.goal::after { content: 'GOAL'; position: absolute; font-size: 10px; color: var(--gold); bottom: 2px; opacity: 0.7; }
+
+        /* 禁止標示 */
+        .cell.forbidden { cursor: not-allowed; opacity: 0.3; }
+        .cell.forbidden::before {
+            content: '✕'; position: absolute; font-size: 20px; color: #ef4444; z-index: 10;
+        }
+
+        .piece {
+            width: 75%; height: 75%;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            z-index: 2;
+        }
+        .piece.p1 { background: var(--p1); border: 2px solid #881337; }
+        .piece.p2 { background: var(--p2); border: 2px solid #0e7490; }
+        .piece.king::before {
+            content: '★'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white;
+        }
+
+        .rock {
+            width: 70%; height: 70%;
+            background: #64748b;
+            border-radius: 4px;
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.1);
+        }
+
+        .cell.selected .piece { transform: scale(1.15); box-shadow: 0 0 15px rgba(255,255,255,0.5); }
+
+        .hint {
+            width: 14px; height: 14px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            z-index: 5;
+        }
+        @keyframes pulse { 0%{opacity:0.6; transform:scale(0.9)} 50%{opacity:1; transform:scale(1.1)} 100%{opacity:0.6; transform:scale(0.9)} }
+
+        .cards-container {
+            margin-top: 20px; width: 320px; display: flex; justify-content: space-around; min-height: 80px;
+        }
+        
+        .card {
+            background: #334155; border: 1px solid #475569; border-radius: 8px; width: 65px; padding: 8px 4px;
+            text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .card.active { border-color: var(--gold); background: #475569; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(251, 191, 36, 0.2); }
+        .card.used { opacity: 0.2; pointer-events: none; filter: grayscale(1); }
+        .card-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .card-name { font-size: 0.7rem; color: #cbd5e1; }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+        }
+
+        .menu-box {
+            background: var(--panel-bg); padding: 30px; border-radius: 20px; width: 85%; max-width: 340px;
+            text-align: center; border: 1px solid #334155; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn {
+            display: block; width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: #0f172a; }
+        .btn-secondary { background: #475569; color: var(--text); }
+        .btn-outline { background: transparent; border: 2px solid #475569; color: #94a3b8; padding: 10px; width: auto; font-size: 0.8rem; }
+        
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>SLIPE</h1>
+        <div class="subtitle" id="mode-subtitle">Classic Edition</div>
+    </div>
+
+    <div class="status-bar">
+        <div id="turn-badge" class="turn-badge" style="background:var(--p1); color:white;">Red's Turn</div>
+        <button class="btn-outline" onclick="showMenu()">選單 Menu</button>
+    </div>
+
+    <div class="board-wrapper">
+        <div id="board" class="board"></div>
+    </div>
+
+    <div id="cards-area" class="cards-container hidden"></div>
+
+    <div style="margin-top:10px; color:#64748b; font-size:0.85rem; height: 20px;" id="game-msg">
+        將王 (★) 移至中心
+    </div>
+
+    <div id="main-menu" class="overlay">
+        <div class="menu-box">
+            <h2 style="margin:0 0 10px 0; color:white;">SLIPE</h2>
+            <p style="color:#94a3b8; margin-bottom:20px;">選擇遊戲模式</p>
+            <button class="btn btn-secondary" onclick="startGame('classic')">經典模式 (Classic)</button>
+            <button class="btn btn-primary" onclick="startGame('tactics')">戰術模式 (Tactics)</button>
+            <div style="margin-top:10px; font-size:0.75rem; color:#64748b;">
+                *戰術模式修正：急停不可直接停在終點
+            </div>
+        </div>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <div class="menu-box">
+            <h2 id="winner-text" style="color:white; margin-bottom:20px;">紅方獲勝!</h2>
+            <button class="btn btn-primary" onclick="restartGame()">再來一局</button>
+            <button class="btn btn-secondary" onclick="showMenu()">回主選單</button>
+        </div>
+    </div>
+
+<script>
+    const SIZE = 5;
+    const CENTER = 2;
+    const P1 = 1;
+    const P2 = 2;
+
+    let board = [];
+    let currentPlayer = P1;
+    let currentMode = 'classic';
+    let selected = null;
+    let moves = [];
+    let isGameOver = false;
+
+    // 戰術數據
+    let activeCard = null; 
+    let playerCards = { 1: [], 2: [] };
+
+    const boardEl = document.getElementById('board');
+    const cardsArea = document.getElementById('cards-area');
+    const turnBadge = document.getElementById('turn-badge');
+    const menuEl = document.getElementById('main-menu');
+    const endScreen = document.getElementById('end-screen');
+    const subtitle = document.getElementById('mode-subtitle');
+    const msgEl = document.getElementById('game-msg');
+
+    function showMenu() {
+        menuEl.classList.remove('hidden');
+        endScreen.classList.add('hidden');
+    }
+
+    function startGame(mode) {
+        currentMode = mode;
+        menuEl.classList.add('hidden');
+        subtitle.innerText = mode === 'classic' ? "Classic Mode" : "Tactics Mode";
+        
+        if(mode === 'tactics') {
+            cardsArea.classList.remove('hidden');
+            playerCards[1] = ['stop', 'wall', 'break'];
+            playerCards[2] = ['stop', 'wall', 'break'];
+        } else {
+            cardsArea.classList.add('hidden');
+        }
+
+        initBoard();
+        activeCard = null;
+        updateUI();
+    }
+
+    function restartGame() {
+        startGame(currentMode);
+    }
+
+    function initBoard() {
+        board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
+        
+        [0, 1, 3, 4].forEach(c => board[0][c] = {type:'piece', p:P1, king:false});
+        board[0][2] = {type:'piece', p:P1, king:true};
+        
+        [0, 1, 3, 4].forEach(c => board[4][c] = {type:'piece', p:P2, king:false});
+        board[4][2] = {type:'piece', p:P2, king:true};
+
+        if (currentMode === 'tactics') {
+            let rocks = 0;
+            while(rocks < 2) {
+                let r = Math.floor(Math.random() * SIZE);
+                let c = Math.floor(Math.random() * SIZE);
+                if (r > 0 && r < 4 && !(r===2 && c===2) && !board[r][c]) {
+                    board[r][c] = {type:'rock'};
+                    rocks++;
+                }
+            }
+        }
+
+        currentPlayer = P1;
+        isGameOver = false;
+        selected = null;
+        moves = [];
+    }
+
+    // 計算移動邏輯
+    function getMoves(r, c) {
+        let res = [];
+        let dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+        
+        dirs.forEach(([dr, dc]) => {
+            let cr = r, cc = c;
+            while(true) {
+                let nr = cr + dr;
+                let nc = cc + dc;
+                
+                if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
+                if (board[nr][nc]) break;
+                
+                // 急停邏輯 (Stop Card)
+                if (activeCard === 'stop') {
+                    // 修正：如果目標是終點(2,2)，則不允許使用急停停在這裡
+                    // 除非這一步本來就是滑到底 (cr+dr) 撞牆停下的，但這裡我們只處理中間過程
+                    if (!(nr === CENTER && nc === CENTER)) {
+                        res.push({r: nr, c: nc});
+                    }
+                }
+                
+                cr = nr;
+                cc = nc;
+            }
+            // 正常滑動終點
+            if (cr !== r || cc !== c) {
+                // 如果終點剛好是 GOAL，這當然合法（無論有無急停卡）
+                // 為了避免重複，先檢查是否已存在
+                if (!res.some(m => m.r === cr && m.c === cc)) {
+                    res.push({r: cr, c: cc});
+                }
+            }
+        });
+        return res;
+    }
+
+    function handleBoardClick(r, c) {
+        if(isGameOver) return;
+
+        // 1. 造牆 / 破壞 處理
+        if (activeCard === 'wall') {
+            if (!board[r][c] && !(r===CENTER && c===CENTER)) {
+                board[r][c] = {type:'rock'};
+                consumeCard('wall');
+                endTurn();
+            } else {
+                msgEl.innerText = "這裡不能放牆壁";
+            }
+            return;
+        }
+        if (activeCard === 'break') {
+            if (board[r][c] && board[r][c].type === 'rock') {
+                board[r][c] = null;
+                consumeCard('break');
+                endTurn();
+            } else {
+                msgEl.innerText = "這不是石頭";
+            }
+            return;
+        }
+
+        const cellData = board[r][c];
+
+        // 2. 移動棋子
+        const move = moves.find(m => m.r === r && m.c === c);
+        if (move && selected) {
+            let p = board[selected.r][selected.c];
+            board[r][c] = p;
+            board[selected.r][selected.c] = null;
+            
+            if (activeCard === 'stop') consumeCard('stop');
+
+            if (p.king && r === CENTER && c === CENTER) {
+                updateUI();
+                setTimeout(() => gameOver(currentPlayer), 50);
+                return;
+            }
+            
+            endTurn();
+            return;
+        }
+
+        // 3. 選取棋子
+        if (cellData && cellData.type === 'piece' && cellData.p === currentPlayer) {
+            selected = {r, c};
+            moves = getMoves(r, c);
+            // 確保急停卡狀態正確（如果切換選取）
+            if (activeCard !== 'stop' && activeCard !== 'wall' && activeCard !== 'break') activeCard = null; 
+            
+            updateUI();
+            
+            if (activeCard === 'stop') {
+                msgEl.innerText = "急停模式：選綠點移動 (不可停在GOAL)";
+            } else {
+                msgEl.innerText = "選擇綠點移動";
+            }
+            return;
+        }
+
+        // 4. 取消
+        selected = null;
+        moves = [];
+        if (activeCard !== 'stop') activeCard = null;
+        updateUI();
+    }
+
+    function handleCardClick(cardName) {
+        if (isGameOver) return;
+        
+        if (activeCard === cardName) {
+            activeCard = null;
+            selected = null;
+            moves = [];
+            msgEl.innerText = "已取消技能";
+        } else {
+            activeCard = cardName;
+            selected = null;
+            moves = [];
+            
+            if (cardName === 'stop') msgEl.innerText = "急停：請選擇棋子 (不可停在GOAL)";
+            if (cardName === 'wall') msgEl.innerText = "造牆：請點擊空白格子";
+            if (cardName === 'break') msgEl.innerText = "破壞：請點擊石頭";
+        }
+        updateUI();
+    }
+
+    function consumeCard(name) {
+        let idx = playerCards[currentPlayer].indexOf(name);
+        if (idx !== -1) playerCards[currentPlayer].splice(idx, 1);
+        activeCard = null;
+    }
+
+    function endTurn() {
+        currentPlayer = currentPlayer === P1 ? P2 : P1;
+        selected = null;
+        moves = [];
+        activeCard = null;
+        msgEl.innerText = "換人思考...";
+        updateUI();
+    }
+
+    function gameOver(winner) {
+        isGameOver = true;
+        const txt = document.getElementById('winner-text');
+        txt.innerText = (winner === P1 ? "紅方" : "藍方") + " 獲勝！";
+        txt.style.color = winner === P1 ? "var(--p1)" : "var(--p2)";
+        endScreen.classList.remove('hidden');
+    }
+
+    function updateUI() {
+        turnBadge.innerText = currentPlayer === P1 ? "Red's Turn" : "Blue's Turn";
+        turnBadge.style.background = currentPlayer === P1 ? "var(--p1)" : "var(--p2)";
+        turnBadge.style.color = currentPlayer === P1 ? "white" : "black";
+
+        boardEl.innerHTML = '';
+        for(let r=0; r<SIZE; r++) {
+            for(let c=0; c<SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if(r===CENTER && c===CENTER) cell.classList.add('goal');
+                
+                // 如果是急停模式，且此格是GOAL，顯示為禁止
+                if(activeCard === 'stop' && r===CENTER && c===CENTER) {
+                    cell.classList.add('forbidden');
+                }
+
+                if(selected && selected.r === r && selected.c === c) cell.classList.add('selected');
+
+                const item = board[r][c];
+                if(item) {
+                    const div = document.createElement('div');
+                    if(item.type === 'rock') div.className = 'rock';
+                    else if(item.type === 'piece') {
+                        div.className = `piece ${item.p === P1 ? 'p1' : 'p2'} ${item.king ? 'king' : ''}`;
+                    }
+                    cell.appendChild(div);
+                }
+
+                if(moves.some(m => m.r === r && m.c === c)) {
+                    const hint = document.createElement('div');
+                    hint.className = 'hint';
+                    cell.appendChild(hint);
+                }
+
+                if (activeCard === 'wall' && !item && !(r===CENTER && c===CENTER)) {
+                    cell.style.boxShadow = 'inset 0 0 10px rgba(251, 191, 36, 0.3)';
+                }
+                if (activeCard === 'break' && item && item.type === 'rock') {
+                    cell.style.boxShadow = 'inset 0 0 10px rgba(244, 63, 94, 0.5)';
+                }
+
+                cell.onclick = () => handleBoardClick(r, c);
+                boardEl.appendChild(cell);
+            }
+        }
+
+        if(currentMode === 'tactics') {
+            cardsArea.innerHTML = '';
+            const myCards = playerCards[currentPlayer];
+            const allTypes = [
+                {id: 'stop', icon: '🛑', name: '急停'},
+                {id: 'wall', icon: '🧱', name: '造牆'},
+                {id: 'break', icon: '🔨', name: '破壞'}
+            ];
+
+            allTypes.forEach(type => {
+                const hasCard = myCards.includes(type.id);
+                const div = document.createElement('div');
+                div.className = `card ${hasCard ? '' : 'used'} ${activeCard === type.id ? 'active' : ''}`;
+                div.innerHTML = `<span class="card-icon">${type.icon}</span><span class="card-name">${type.name}</span>`;
+                if(hasCard) {
+                    div.onclick = () => handleCardClick(type.id);
+                }
+                cardsArea.appendChild(div);
+            });
+        }
+    }
+
+</script>
+</body>
+</html>
