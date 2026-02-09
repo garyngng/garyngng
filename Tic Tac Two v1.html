@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Two 移動井字棋</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --board-bg: #34495e;
+            --x-color: #e74c3c;
+            --o-color: #3498db;
+            --text-color: #ecf0f1;
+            --accent-color: #f1c40f;
+            --cell-size: 60px;
+            --gap: 5px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            user-select: none;
+            overflow-y: auto; /* 允許小螢幕滾動 */
+            padding: 20px 0;
+        }
+
+        h1 { margin: 10px 0; font-size: 1.8rem; }
+        .subtitle { font-size: 0.9rem; opacity: 0.8; margin-bottom: 15px; }
+
+        /* 選項區塊 */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: rgba(0,0,0,0.2);
+            padding: 4px;
+            border-radius: 50px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: #95a5a6;
+            cursor: pointer;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn.active {
+            background-color: var(--accent-color);
+            color: #2c3e50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* 狀態顯示 */
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .player-score { display: flex; align-items: center; gap: 5px; }
+        .turn-indicator {
+            padding: 5px 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            font-size: 1rem;
+            color: var(--accent-color);
+        }
+
+        /* 棋盤區域 */
+        .game-area {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, var(--cell-size));
+            grid-template-rows: repeat(5, var(--cell-size));
+            gap: var(--gap);
+            background-color: var(--board-bg);
+            padding: var(--gap);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .cell:hover { background-color: rgba(255,255,255,0.1); }
+        .cell.x { color: var(--x-color); }
+        .cell.o { color: var(--o-color); }
+        
+        /* 選中的棋子 */
+        .cell.selected {
+            background-color: rgba(241, 196, 15, 0.3);
+            box-shadow: inset 0 0 0 2px var(--accent-color);
+        }
+
+        /* 黃色框框 (Grid) */
+        .grid-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            /* 3 cells + 2 gaps + padding correction */
+            width: calc(3 * var(--cell-size) + 2 * var(--gap)); 
+            height: calc(3 * var(--cell-size) + 2 * var(--gap));
+            border: 4px solid var(--accent-color);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+            pointer-events: none; /* 讓點擊穿透 */
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        /* 暗化框外的區域 (視覺輔助) */
+        .cell.outside-grid {
+            opacity: 0.3;
+        }
+
+        /* 控制按鈕區 */
+        .controls-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .grid-controls {
+            display: grid;
+            grid-template-columns: 40px 40px 40px;
+            gap: 5px;
+        }
+        .grid-btn {
+            width: 40px; height: 40px;
+            border: none;
+            background: var(--board-bg);
+            color: var(--text-color);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .grid-btn:hover:not(:disabled) { background: var(--accent-color); color: var(--bg-color); }
+        .grid-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .grid-btn-up { grid-column: 2; }
+        .grid-btn-left { grid-column: 1; grid-row: 2; }
+        .grid-btn-down { grid-column: 2; grid-row: 2; }
+        .grid-btn-right { grid-column: 3; grid-row: 2; }
+
+        .action-text { font-size: 0.9rem; color: #95a5a6; min-height: 1.2em; }
+
+        /* 底部按鈕 */
+        .bottom-btns {
+            display: flex; gap: 15px; margin-top: 20px;
+        }
+        .action-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            font-weight: bold;
+        }
+        .btn-restart { background-color: var(--accent-color); color: var(--bg-color); }
+        .btn-sound { background-color: #95a5a6; color: white; }
+        .action-btn:active { transform: scale(0.95); }
+
+        /* 勝利線 */
+        .win-line {
+            position: absolute;
+            background-color: white;
+            height: 4px;
+            border-radius: 2px;
+            transform-origin: left center;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        /* 手機適配 */
+        @media (max-width: 400px) {
+            :root { --cell-size: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tic Tac Two</h1>
+    <div class="subtitle">移動框框．策略對戰</div>
+
+    <div class="options-container">
+        <div class="toggle-group" id="mode-toggle">
+            <button class="toggle-btn active" data-value="pvp">雙人對戰</button>
+            <button class="toggle-btn" data-value="pve">挑戰 AI</button>
+        </div>
+        <div class="toggle-group" id="ai-side-toggle" style="display:none;">
+            <button class="toggle-btn active" data-value="x">我先攻 (X)</button>
+            <button class="toggle-btn" data-value="o">我後攻 (O)</button>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="player-score"><span style="color:var(--x-color)">X:</span> <span id="score-x">0</span></div>
+        <div class="turn-indicator" id="status-msg">準備開始</div>
+        <div class="player-score"><span style="color:var(--o-color)">O:</span> <span id="score-o">0</span></div>
+    </div>
+
+    <div class="game-area">
+        <div class="board" id="board">
+            <!-- 5x5 Cells generated by JS -->
+            <div class="grid-overlay" id="grid-overlay"></div>
+            <div class="win-line" id="win-line"></div>
+        </div>
+    </div>
+
+    <div class="controls-area">
+        <div class="action-text" id="action-hint">移動框框或下子</div>
+        <div class="grid-controls">
+            <button class="grid-btn grid-btn-up" onclick="moveGrid(-1, 0)">▲</button>
+            <button class="grid-btn grid-btn-left" onclick="moveGrid(0, -1)">◀</button>
+            <button class="grid-btn grid-btn-down" onclick="moveGrid(1, 0)">▼</button>
+            <button class="grid-btn grid-btn-right" onclick="moveGrid(0, 1)">▶</button>
+        </div>
+    </div>
+
+    <div class="bottom-btns">
+        <button class="action-btn btn-restart" onclick="resetGame()">重新開始</button>
+        <button class="action-btn btn-sound" onclick="toggleSound()" id="btn-sound">音效: 開</button>
+    </div>
+
+    <script>
+        // 遊戲狀態
+        const BOARD_SIZE = 5;
+        const GRID_SIZE = 3;
+        const MAX_PIECES = 4;
+        
+        let board = Array(BOARD_SIZE * BOARD_SIZE).fill(null);
+        let gridPos = { row: 1, col: 1 }; // 初始框框位置 (置中)
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let mode = 'pvp'; // pvp, pve
+        let aiSide = 'o'; // AI 是 X 還是 O
+        let pieces = { 'X': 0, 'O': 0 }; // 場上棋子數量
+        let scores = { 'X': 0, 'O': 0 };
+        let selectedCell = -1; // 用於移子邏輯
+        let soundEnabled = true;
+
+        // DOM 元素
+        const boardEl = document.getElementById('board');
+        const overlayEl = document.getElementById('grid-overlay');
+        const statusMsg = document.getElementById('status-msg');
+        const hintMsg = document.getElementById('action-hint');
+        const winLine = document.getElementById('win-line');
+        const gridBtns = document.querySelectorAll('.grid-btn');
+
+        // 音效 (頻率合成)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type='sine', duration=0.1) {
+            if (!soundEnabled) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+        const sounds = {
+            move: () => playTone(300, 'sine', 0.1),
+            select: () => playTone(400, 'square', 0.05),
+            grid: () => playTone(200, 'triangle', 0.2),
+            win: () => { playTone(500, 'sine', 0.1); setTimeout(()=>playTone(800, 'sine', 0.2), 150); },
+            error: () => playTone(150, 'sawtooth', 0.2)
+        };
+
+        // 初始化
+        function init() {
+            renderBoard();
+            setupEventListeners();
+            resetGame();
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            boardEl.appendChild(overlayEl); // 確保 overlay 在
+            boardEl.appendChild(winLine);
+            
+            for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => handleCellClick(i));
+                boardEl.appendChild(cell);
+            }
+            updateGridVisuals();
+        }
+
+        function setupEventListeners() {
+            // 模式切換
+            document.querySelectorAll('#mode-toggle .toggle-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#mode-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    mode = e.target.dataset.value;
+                    document.getElementById('ai-side-toggle').style.display = mode === 'pve' ? 'flex' : 'none';
+                    resetGame();
+                });
+            });
+
+            // AI 先後攻
+            document.querySelectorAll('#ai-side-toggle .toggle-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#ai-side-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    // 如果選 X (我先攻)，AI 就是 O。如果選 O (我後攻)，AI 就是 X。
+                    aiSide = e.target.dataset.value === 'x' ? 'o' : 'x'; 
+                    resetGame();
+                });
+            });
+        }
+
+        function resetGame() {
+            board.fill(null);
+            pieces = { 'X': 0, 'O': 0 };
+            currentPlayer = 'X';
+            gameActive = true;
+            gridPos = { row: 1, col: 1 }; // Reset grid to center
+            selectedCell = -1;
+            winLine.style.display = 'none';
+            
+            // UI 更新
+            document.querySelectorAll('.cell').forEach(c => {
+                c.className = 'cell';
+                c.textContent = '';
+            });
+            updateGridVisuals();
+            updateStatus();
+
+            // 如果 AI 先攻
+            if (mode === 'pve' && currentPlayer === aiSide) {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        // 核心邏輯: 檢查是否在 3x3 黃色框內
+        function isInGrid(index) {
+            const r = Math.floor(index / BOARD_SIZE);
+            const c = index % BOARD_SIZE;
+            return r >= gridPos.row && r < gridPos.row + GRID_SIZE &&
+                   c >= gridPos.col && c < gridPos.col + GRID_SIZE;
+        }
+
+        // 視覺更新
+        function updateGridVisuals() {
+            // 移動 Overlay
+            const cellSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell-size'));
+            const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+            const padding = gap; // grid padding
+            
+            const left = gridPos.col * (cellSize + gap) + padding;
+            const top = gridPos.row * (cellSize + gap) + padding;
+            
+            overlayEl.style.transform = `translate(${left}px, ${top}px)`;
+
+            // 高亮/暗化 Cell
+            document.querySelectorAll('.cell').forEach((cell, idx) => {
+                // 清除舊狀態
+                cell.classList.remove('outside-grid', 'selected');
+                
+                if (!isInGrid(idx)) {
+                    cell.classList.add('outside-grid');
+                }
+                if (idx === selectedCell) {
+                    cell.classList.add('selected');
+                }
+                
+                // 更新內容
+                cell.textContent = board[idx] || '';
+                cell.classList.remove('x', 'o');
+                if (board[idx]) cell.classList.add(board[idx].toLowerCase());
+            });
+
+            // 更新按鈕狀態 (邊界檢查)
+            gridBtns[0].disabled = gridPos.row <= 0; // Up
+            gridBtns[1].disabled = gridPos.col <= 0; // Left
+            gridBtns[2].disabled = gridPos.row >= BOARD_SIZE - GRID_SIZE; // Down
+            gridBtns[3].disabled = gridPos.col >= BOARD_SIZE - GRID_SIZE; // Right
+            
+            // 如果是 AI 回合或遊戲結束，禁用按鈕
+            if (!gameActive || (mode === 'pve' && currentPlayer === aiSide)) {
+                gridBtns.forEach(b => b.disabled = true);
+            }
+        }
+
+        function updateStatus() {
+            if (!gameActive) return;
+            statusMsg.textContent = `${currentPlayer} 回合`;
+            statusMsg.style.color = currentPlayer === 'X' ? 'var(--x-color)' : 'var(--o-color)';
+            
+            let hint = "";
+            if (pieces[currentPlayer] < 2) {
+                hint = "佈局階段: 請在框內下子";
+            } else if (pieces[currentPlayer] < MAX_PIECES) {
+                hint = "可下子、移子 或 移動框框";
+            } else {
+                hint = "已達棋子上限 (4)，請移子 或 移動框框";
+            }
+            if (selectedCell !== -1) hint = "請選擇框內空格移動棋子";
+            
+            hintMsg.textContent = hint;
+        }
+
+        // 點擊處理
+        function handleCellClick(index) {
+            if (!gameActive) return;
+            if (mode === 'pve' && currentPlayer === aiSide) return;
+
+            // 只能操作框內的格子
+            if (!isInGrid(index)) {
+                sounds.error();
+                return;
+            }
+
+            // 邏輯分歧
+            // 1. 嘗試選取自己的棋子 (準備移動)
+            if (board[index] === currentPlayer) {
+                // 只有在能移動階段才能選
+                if (pieces[currentPlayer] >= 2) {
+                    selectedCell = index;
+                    sounds.select();
+                    updateGridVisuals();
+                    hintMsg.textContent = "已選取，請點擊框內空格移動";
+                }
+                return;
+            }
+
+            // 2. 點擊空格
+            if (!board[index]) {
+                if (selectedCell !== -1) {
+                    // 執行移子 (Move Piece)
+                    movePiece(selectedCell, index);
+                } else {
+                    // 執行下子 (Place Piece)
+                    if (pieces[currentPlayer] < MAX_PIECES) {
+                        placePiece(index);
+                    } else {
+                        // 滿了，必須先選子
+                        sounds.error();
+                        hintMsg.textContent = "棋子已用完，請先點擊己方棋子移動";
+                    }
+                }
+            }
+        }
+
+        // 動作: 下子
+        function placePiece(index) {
+            board[index] = currentPlayer;
+            pieces[currentPlayer]++;
+            sounds.move();
+            finalizeMove();
+        }
+
+        // 動作: 移子
+        function movePiece(from, to) {
+            board[from] = null;
+            board[to] = currentPlayer;
+            selectedCell = -1;
+            sounds.move();
+            finalizeMove();
+        }
+
+        // 動作: 移框
+        function moveGrid(dRow, dCol) {
+            if (!gameActive) return;
+            // 規則: 佈局階段 (前2子) 不能移框
+            if (pieces['X'] < 2 || pieces['O'] < 2) {
+                sounds.error();
+                hintMsg.textContent = "雙方各下2子後才能移動框框";
+                return;
+            }
+
+            const newRow = gridPos.row + dRow;
+            const newCol = gridPos.col + dCol;
+
+            if (newRow >= 0 && newRow <= BOARD_SIZE - GRID_SIZE &&
+                newCol >= 0 && newCol <= BOARD_SIZE - GRID_SIZE) {
+                
+                gridPos.row = newRow;
+                gridPos.col = newCol;
+                sounds.grid();
+                finalizeMove(true); // true 代表是移框動作
+            }
+        }
+
+        function finalizeMove(isGridMove = false) {
+            updateGridVisuals();
+            
+            // 檢查勝利
+            // 特殊規則: 如果移框導致雙方都連線，移框者勝。
+            // 這裡簡化: 檢查 CurrentPlayer 是否贏。如果有，CurrentPlayer 勝。
+            // 如果 CurrentPlayer 沒贏，但 Opponent 贏了 (自殺)，則 Opponent 勝。
+            
+            const winCurrent = checkWin(currentPlayer);
+            const opponent = currentPlayer === 'X' ? 'O' : 'X';
+            const winOpponent = checkWin(opponent);
+
+            if (winCurrent) {
+                endGame(currentPlayer, winCurrent);
+                return;
+            }
+            if (winOpponent) {
+                endGame(opponent, winOpponent);
+                return;
+            }
+
+            // 換人
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            updateStatus();
+
+            // AI Turn
+            if (gameActive && mode === 'pve' && currentPlayer === aiSide) {
+                setTimeout(aiMove, 600);
+            }
+        }
+
+        // 勝利檢查 (只檢查框內)
+        function checkWin(player) {
+            // 將框內 3x3 轉換為 board 索引
+            // 檢查 3 橫, 3 直, 2 斜
+            const p = player;
+            const startR = gridPos.row;
+            const startC = gridPos.col;
+
+            // Helper to get board index from local grid (0..2, 0..2)
+            const getIdx = (r, c) => (startR + r) * BOARD_SIZE + (startC + c);
+
+            const lines = [
+                // Rows
+                [getIdx(0,0), getIdx(0,1), getIdx(0,2)],
+                [getIdx(1,0), getIdx(1,1), getIdx(1,2)],
+                [getIdx(2,0), getIdx(2,1), getIdx(2,2)],
+                // Cols
+                [getIdx(0,0), getIdx(1,0), getIdx(2,0)],
+                [getIdx(0,1), getIdx(1,1), getIdx(2,1)],
+                [getIdx(0,2), getIdx(1,2), getIdx(2,2)],
+                // Diagonals
+                [getIdx(0,0), getIdx(1,1), getIdx(2,2)],
+                [getIdx(0,2), getIdx(1,1), getIdx(2,0)]
+            ];
+
+            for (let line of lines) {
+                if (line.every(idx => board[idx] === p)) {
+                    return line; // Return winning line indices
+                }
+            }
+            return null;
+        }
+
+        function endGame(winner, line) {
+            gameActive = false;
+            scores[winner]++;
+            document.getElementById(`score-${winner.toLowerCase()}`).textContent = scores[winner];
+            statusMsg.textContent = `${winner} Wins!`;
+            statusMsg.style.color = winner === 'X' ? 'var(--x-color)' : 'var(--o-color)';
+            sounds.win();
+            drawWinLine(line);
+        }
+
+        function drawWinLine(lineIndices) {
+            if (!lineIndices) return;
+            const idx1 = lineIndices[0];
+            const idx3 = lineIndices[2];
+            
+            const cell1 = document.querySelector(`.cell[data-index='${idx1}']`);
+            const cell3 = document.querySelector(`.cell[data-index='${idx3}']`);
+            
+            const rect1 = cell1.getBoundingClientRect();
+            const rect3 = cell3.getBoundingClientRect();
+            const boardRect = boardEl.getBoundingClientRect();
+
+            const x1 = rect1.left + rect1.width/2 - boardRect.left;
+            const y1 = rect1.top + rect1.height/2 - boardRect.top;
+            const x2 = rect3.left + rect3.width/2 - boardRect.left;
+            const y2 = rect3.top + rect3.height/2 - boardRect.top;
+
+            const length = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+            const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+
+            winLine.style.width = `${length}px`;
+            winLine.style.top = `${y1}px`;
+            winLine.style.left = `${x1}px`;
+            winLine.style.transform = `rotate(${angle}deg)`;
+            winLine.style.display = 'block';
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('btn-sound').textContent = `音效: ${soundEnabled?'開':'關'}`;
+        }
+
+        // --- 簡單 AI ---
+        function aiMove() {
+            if (!gameActive) return;
+
+            // 1. 嘗試贏
+            // 窮舉所有動作 (Place, Move Piece, Move Grid) 看看能不能贏
+            // 這是一個簡單版本，隨機優先
+
+            const possibleActions = [];
+            const myPiecesOnBoard = [];
+            board.forEach((p, i) => { if(p === aiSide) myPiecesOnBoard.push(i); });
+
+            // Action: Place
+            if (pieces[aiSide] < MAX_PIECES) {
+                for(let i=0; i<board.length; i++) {
+                    if (isInGrid(i) && !board[i]) {
+                        possibleActions.push({type: 'place', idx: i});
+                    }
+                }
+            }
+
+            // Action: Move Piece (只有在有子且在框內時)
+            // AI 應該優先移動在框內的子，或者如果規則允許把外面的子移進來?
+            // 規則: "Move one of their pieces that are in the grid to another spot in the grid"
+            // 所以只能移框內的。
+            const myInnerPieces = myPiecesOnBoard.filter(idx => isInGrid(idx));
+            if (myInnerPieces.length > 0) {
+                // 找所有空格
+                const innerEmpties = [];
+                for(let i=0; i<board.length; i++) {
+                    if(isInGrid(i) && !board[i]) innerEmpties.push(i);
+                }
+                
+                myInnerPieces.forEach(from => {
+                    innerEmpties.forEach(to => {
+                        possibleActions.push({type: 'movePiece', from, to});
+                    });
+                });
+            }
+
+            // Action: Move Grid
+            // 只有當雙方都下滿2子後
+            if (pieces['X'] >= 2 && pieces['O'] >= 2) {
+                const moves = [
+                    {dr: -1, dc: 0}, {dr: 1, dc: 0}, {dr: 0, dc: -1}, {dr: 0, dc: 1}
+                ];
+                moves.forEach(m => {
+                    const nr = gridPos.row + m.dr;
+                    const nc = gridPos.col + m.dc;
+                    if (nr >= 0 && nr <= BOARD_SIZE - GRID_SIZE &&
+                        nc >= 0 && nc <= BOARD_SIZE - GRID_SIZE) {
+                        possibleActions.push({type: 'moveGrid', dr: m.dr, dc: m.dc});
+                    }
+                });
+            }
+
+            if (possibleActions.length === 0) return; // Should not happen unless stuck
+
+            // 簡單 AI: 隨機選一個
+            // 優化: 如果有動作能贏，選它。
+            // 為了保持程式碼簡潔，這裡做純隨機 + 稍微偏好"下子" (比較積極)
+            
+            // 真的 AI 需要模擬狀態，這裡簡化。
+            const randomAction = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+            
+            if (randomAction.type === 'place') {
+                placePiece(randomAction.idx);
+            } else if (randomAction.type === 'movePiece') {
+                movePiece(randomAction.from, randomAction.to);
+            } else if (randomAction.type === 'moveGrid') {
+                moveGrid(randomAction.dr, randomAction.dc);
+            }
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
