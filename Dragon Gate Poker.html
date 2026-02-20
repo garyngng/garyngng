@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <title>射龍門小遊戲</title>
+  <style>
+    :root {
+        --bg-color: #2c3e50;
+        --board-bg: #34495e;
+        --x-color: #e74c3c;
+        --o-color: #3498db;
+        --text-color: #ecf0f1;
+        --accent-color: #f1c40f;
+        --cell-size: 60px;
+        --gap: 5px;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        user-select: none;
+        overflow-y: auto;
+        padding: 20px 0;
+    }
+
+    h1 { margin: 10px 0; font-size: 1.8rem; }
+    .subtitle { font-size: 0.9rem; opacity: 0.8; margin-bottom: 15px; }
+
+    /* 主容器 */
+    .game-container {
+        background: var(--board-bg);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        min-width: 280px;
+    }
+
+    /* 狀態條 */
+    .status-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    .message {
+        padding: 5px 15px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 20px;
+        font-size: 0.95rem;
+        color: var(--accent-color);
+        min-height: 1.2em;
+        text-align: center;
+    }
+
+    .deck-info {
+        font-size: 0.9rem;
+        color: #bdc3c7;
+    }
+
+    /* 牌區 */
+    .cards-row {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 12px 0;
+    }
+
+    .card {
+        width: 80px;
+        height: 120px;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #2c3e50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        font-size: 20px;
+        position: relative;
+    }
+
+    .card small {
+        font-size: 11px;
+        color: #7f8c8d;
+        position: absolute;
+        top: 6px;
+    }
+
+    .card span {
+        font-size: 22px;
+    }
+
+    /* 控制按鈕區 */
+    .controls-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .top-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .action-btn {
+        padding: 8px 18px;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 0.1s, background 0.2s, color 0.2s;
+        font-weight: bold;
+    }
+
+    .btn-new-round { background-color: var(--accent-color); color: var(--bg-color); }
+    .btn-shoot { background-color: var(--o-color); color: #fff; }
+    .btn-reset-deck { background-color: #95a5a6; color: white; }
+
+    .action-btn:hover:not(:disabled) {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+    }
+    .action-btn:active:not(:disabled) {
+        transform: scale(0.96);
+    }
+
+    .action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .rules {
+        font-size: 0.8rem;
+        color: #bdc3c7;
+        max-width: 320px;
+        text-align: left;
+        line-height: 1.4;
+    }
+
+    @media (max-width: 400px) {
+        :root { --cell-size: 50px; }
+        .card {
+            width: 70px;
+            height: 105px;
+        }
+    }
+  </style>
+</head>
+<body>
+  <h1>射龍門 (單人版)</h1>
+  <div class="subtitle">簡易版撲克牌射龍門，先開門柱，再試試射中龍門！</div>
+
+  <div class="game-container">
+    <div class="status-bar">
+        <div id="message" class="message">按「新一輪發門柱」開始玩。</div>
+        <div id="deck-info" class="deck-info">牌堆剩餘張數：52</div>
+    </div>
+
+    <div id="game-area">
+        <div class="cards-row">
+          <div class="card" id="card1">
+            <small>門柱 1</small>
+            <span>?</span>
+          </div>
+          <div class="card" id="card2">
+            <small>門柱 2</small>
+            <span>?</span>
+          </div>
+          <div class="card" id="card3">
+            <small>射門</small>
+            <span>?</span>
+          </div>
+        </div>
+    </div>
+
+    <div class="controls-area">
+        <div class="top-buttons">
+            <button id="btn-new-round" class="action-btn btn-new-round">新一輪發門柱</button>
+            <button id="btn-shoot" class="action-btn btn-shoot" disabled>射龍門！</button>
+            <button id="btn-reset-deck" class="action-btn btn-reset-deck">重新洗牌</button>
+        </div>
+        <div class="rules">
+            規則：A~K 共 13 點，花色不影響大小。<br>
+            1) 先開兩張作門柱。<br>
+            2) 再開一張。點數在兩張之間：中龍門；等於門柱：撞柱（大輸）；在外：失敗。
+        </div>
+    </div>
+  </div>
+
+    <script>
+    const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+    const suits = ["♠","♥","♣","♦"];
+
+    let deck = [];
+    let card1 = null;
+    let card2 = null;
+    let card3 = null;
+
+    function createDeck() {
+      deck = [];
+      for (const r of ranks) {
+        for (const s of suits) {
+          deck.push({ rank: r, suit: s });
+        }
+      }
+      shuffle(deck);
+      updateDeckInfo();
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function drawCard() {
+      if (deck.length === 0) return null;
+      const c = deck.pop();
+      updateDeckInfo();
+      return c;
+    }
+
+    function rankValue(rank) {
+      if (rank === "A") return 1;
+      if (rank === "J") return 11;
+      if (rank === "Q") return 12;
+      if (rank === "K") return 13;
+      return parseInt(rank, 10);
+    }
+
+    function updateDeckInfo() {
+      const info = document.getElementById("deck-info");
+      info.textContent = "牌堆剩餘張數：" + deck.length;
+    }
+
+    function showCard(domId, card) {
+      const el = document.getElementById(domId);
+      const span = el.querySelector("span");
+      if (!card) {
+        span.textContent = "?";
+      } else {
+        span.textContent = card.rank + card.suit;
+      }
+    }
+
+    function setMessage(text) {
+      document.getElementById("message").textContent = text;
+    }
+
+    // 新增：顯示龍門中的牌
+    function describeMiddleCards(c1, c2) {
+      const v1 = rankValue(c1.rank);
+      const v2 = rankValue(c2.rank);
+      const low = Math.min(v1, v2);
+      const high = Math.max(v1, v2);
+
+      const mids = [];
+      for (let v = low + 1; v <= high - 1; v++) {
+        // 找出對應 rank 字串
+        let r = "";
+        if (v === 1) r = "A";
+        else if (v === 11) r = "J";
+        else if (v === 12) r = "Q";
+        else if (v === 13) r = "K";
+        else r = String(v);
+        mids.push(r);
+      }
+
+      if (mids.length === 0) {
+        setMessage("門柱之間沒有任何牌，是超窄龍門！");
+      } else {
+        setMessage("龍門中的點數有：" + mids.join("、"));
+      }
+    }
+
+    const btnNewRound = document.getElementById("btn-new-round");
+    const btnShoot = document.getElementById("btn-shoot");
+    const btnResetDeck = document.getElementById("btn-reset-deck");
+
+    btnNewRound.addEventListener("click", () => {
+      if (deck.length < 3) {
+        setMessage("牌不夠了，請先重新洗牌。");
+        return;
+      }
+      card1 = drawCard();
+      card2 = drawCard();
+      card3 = null;
+
+      showCard("card1", card1);
+      showCard("card2", card2);
+      showCard("card3", null);
+
+      btnShoot.disabled = false;
+      // 每次新一輪時介紹龍門中的牌
+      describeMiddleCards(card1, card2);
+    });
+
+    btnShoot.addEventListener("click", () => {
+      if (!card1 || !card2) {
+        setMessage("請先按「新一輪發門柱」。");
+        return;
+      }
+      if (deck.length < 1) {
+        setMessage("牌不夠了，請先重新洗牌。");
+        return;
+      }
+
+      card3 = drawCard();
+      showCard("card3", card3);
+      btnShoot.disabled = true;
+
+      const v1 = rankValue(card1.rank);
+      const v2 = rankValue(card2.rank);
+      const v3 = rankValue(card3.rank);
+
+      const low = Math.min(v1, v2);
+      const high = Math.max(v1, v2);
+
+      if (v3 > low && v3 < high) {
+        setMessage("中龍門！恭喜你贏了！");
+      } else if (v3 === v1 || v3 === v2) {
+        setMessage("撞柱！！超慘，賠雙倍！");
+      } else {
+        setMessage("沒中龍門，這輪輸了。");
+      }
+    });
+
+    btnResetDeck.addEventListener("click", () => {
+      createDeck();
+      card1 = card2 = card3 = null;
+      showCard("card1", null);
+      showCard("card2", null);
+      showCard("card3", null);
+      btnShoot.disabled = true;
+      setMessage("已重新洗牌，可以開始新一輪。");
+    });
+
+    createDeck();
+    setMessage("按「新一輪發門柱」開始玩。");
+  </script>
+
+</body>
+</html>
