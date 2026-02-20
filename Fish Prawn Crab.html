@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <title>魚蝦蟹 (單人版)</title>
+  <style>
+    :root {
+        --bg-color: #2c3e50;
+        --board-bg: #34495e;
+        --x-color: #e74c3c;
+        --o-color: #3498db;
+        --text-color: #ecf0f1;
+        --accent-color: #f1c40f;
+        --cell-size: 60px;
+        --gap: 5px;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        user-select: none;
+        overflow-y: auto;
+        padding: 20px 0;
+    }
+
+    h1 { margin: 10px 0; font-size: 1.8rem; }
+    .subtitle { font-size: 0.9rem; opacity: 0.8; margin-bottom: 15px; }
+
+    .game-container {
+        background: var(--board-bg);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        min-width: 280px;
+        max-width: 400px;
+    }
+
+    .status-bar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.95rem;
+    }
+
+    .message {
+        padding: 5px 15px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 20px;
+        font-size: 0.95rem;
+        color: var(--accent-color);
+        min-height: 1.2em;
+        text-align: center;
+    }
+
+    .money-info {
+        font-size: 0.9rem;
+        color: #bdc3c7;
+    }
+
+    /* 下注區 */
+    .bet-area {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        width: 100%;
+    }
+
+    .symbol-tile {
+        background: rgba(0,0,0,0.2);
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        border: 2px solid transparent;
+    }
+
+    .symbol-tile span.icon {
+        font-size: 1.6rem;
+    }
+
+    .symbol-tile span.label {
+        font-size: 0.9rem;
+    }
+
+    .symbol-tile span.bet {
+        font-size: 0.8rem;
+        color: var(--accent-color);
+    }
+
+    .symbol-tile:hover {
+        background: rgba(255,255,255,0.06);
+        transform: translateY(-1px);
+    }
+
+    .symbol-tile.active {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 8px rgba(241,196,15,0.4);
+    }
+
+    /* 控制按鈕 */
+    .controls-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .top-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .action-btn {
+        padding: 8px 18px;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: transform 0.1s, background 0.2s, color 0.2s;
+        font-weight: bold;
+    }
+
+    .btn-roll { background-color: var(--o-color); color: #fff; }
+    .btn-reset { background-color: #95a5a6; color: white; }
+
+    .action-btn:hover:not(:disabled) {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+    }
+    .action-btn:active:not(:disabled) {
+        transform: scale(0.96);
+    }
+
+    .action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* 骰子顯示 */
+    .dice-row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 5px;
+    }
+
+    .dice-box {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        background: rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+    }
+
+    .rules {
+        font-size: 0.8rem;
+        color: #bdc3c7;
+        text-align: left;
+        line-height: 1.4;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    @media (max-width: 400px) {
+        :root { --cell-size: 50px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>魚蝦蟹</h1>
+  <div class="subtitle">選圖案下注，搖 3 粒骰，看看今天手氣如何！</div>
+
+  <div class="game-container">
+    <div class="status-bar">
+        <div id="message" class="message">先點圖案下注，再按「搖骰」。</div>
+        <div id="money-info" class="money-info">資金：100　單注：10</div>
+    </div>
+
+    <div class="bet-area" id="bet-area">
+      <!-- 用文字代替圖案：魚、蝦、蟹、金錢、葫蘆、雞 [web:29][web:32] -->
+      <div class="symbol-tile" data-symbol="魚">
+        <span class="icon">🐟</span>
+        <span class="label">魚</span>
+        <span class="bet">下注：0</span>
+      </div>
+      <div class="symbol-tile" data-symbol="蝦">
+        <span class="icon">🦐</span>
+        <span class="label">蝦</span>
+        <span class="bet">下注：0</span>
+      </div>
+      <div class="symbol-tile" data-symbol="蟹">
+        <span class="icon">🦀</span>
+        <span class="label">蟹</span>
+        <span class="bet">下注：0</span>
+      </div>
+      <div class="symbol-tile" data-symbol="金錢">
+        <span class="icon">💰</span>
+        <span class="label">金錢</span>
+        <span class="bet">下注：0</span>
+      </div>
+      <div class="symbol-tile" data-symbol="葫蘆">
+        <span class="icon">🍶</span>
+        <span class="label">葫蘆</span>
+        <span class="bet">下注：0</span>
+      </div>
+      <div class="symbol-tile" data-symbol="雞">
+        <span class="icon">🐔</span>
+        <span class="label">雞</span>
+        <span class="bet">下注：0</span>
+      </div>
+    </div>
+
+    <div class="dice-row">
+      <div class="dice-box" id="dice1">?</div>
+      <div class="dice-box" id="dice2">?</div>
+      <div class="dice-box" id="dice3">?</div>
+    </div>
+
+    <div class="controls-area">
+      <div class="top-buttons">
+        <button id="btn-roll" class="action-btn btn-roll">搖骰</button>
+        <button id="btn-reset" class="action-btn btn-reset">重設資金 / 下注</button>
+      </div>
+      <div class="rules">
+        基本玩法（單一圖案）：選一個或多個圖案，每格每按一下加一注。<br>
+        搖出 3 粒骰：<br>
+        ‧ 有你下注的圖案，每出現 1 次，賠率 1:1；2 次 賠率 2:1；3 次 賠率 3:1。<br>
+        ‧ 若該圖案完全沒出現，該格下注全輸。 [web:29][web:32][web:33]
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const symbols = ["魚","蝦","蟹","金錢","葫蘆","雞"]; // [web:29][web:32]
+    const symbolToEmoji = {
+      "魚": "🐟",
+      "蝦": "🦐",
+      "蟹": "🦀",
+      "金錢": "💰",
+      "葫蘆": "🍶",
+      "雞": "🐔"
+    };
+
+    let money = 100;
+    let baseBet = 10;
+    const bets = {
+      "魚": 0,
+      "蝦": 0,
+      "蟹": 0,
+      "金錢": 0,
+      "葫蘆": 0,
+      "雞": 0
+    };
+
+    const messageEl = document.getElementById("message");
+    const moneyInfoEl = document.getElementById("money-info");
+    const betAreaEl = document.getElementById("bet-area");
+    const btnRoll = document.getElementById("btn-roll");
+    const btnReset = document.getElementById("btn-reset");
+    const diceEls = [
+      document.getElementById("dice1"),
+      document.getElementById("dice2"),
+      document.getElementById("dice3")
+    ];
+
+    function updateMoneyInfo() {
+      moneyInfoEl.textContent = "資金：" + money + "　單注：" + baseBet;
+    }
+
+    function updateBetTiles() {
+      const tiles = betAreaEl.querySelectorAll(".symbol-tile");
+      tiles.forEach(tile => {
+        const symbol = tile.getAttribute("data-symbol");
+        const betSpan = tile.querySelector(".bet");
+        const amount = bets[symbol];
+        betSpan.textContent = "下注：" + amount;
+        if (amount > 0) {
+          tile.classList.add("active");
+        } else {
+          tile.classList.remove("active");
+        }
+      });
+    }
+
+    function setMessage(text) {
+      messageEl.textContent = text;
+    }
+
+    // 下注：點一下該圖案，就加一個 baseBet，前提是有足夠資金
+    betAreaEl.addEventListener("click", (e) => {
+      const tile = e.target.closest(".symbol-tile");
+      if (!tile) return;
+
+      const symbol = tile.getAttribute("data-symbol");
+      if (money < baseBet) {
+        setMessage("資金不足，無法再加注。可按「重設」回到 100。");
+        return;
+      }
+      bets[symbol] += baseBet;
+      money -= baseBet;
+      updateMoneyInfo();
+      updateBetTiles();
+      setMessage("已在「" + symbol + "」加注 " + baseBet + "。");
+    });
+
+    function rollOneDie() {
+      const idx = Math.floor(Math.random() * symbols.length);
+      return symbols[idx];
+    }
+
+    btnRoll.addEventListener("click", () => {
+      const totalBet = Object.values(bets).reduce((a,b) => a + b, 0);
+      if (totalBet === 0) {
+        setMessage("請先對任意圖案下注，再搖骰。");
+        return;
+      }
+
+      const results = [rollOneDie(), rollOneDie(), rollOneDie()];
+      results.forEach((sym, i) => {
+        diceEls[i].textContent = symbolToEmoji[sym];
+      });
+
+      // 計算每個圖案出現次數
+      const count = { "魚":0,"蝦":0,"蟹":0,"金錢":0,"葫蘆":0,"雞":0 };
+      results.forEach(sym => { count[sym]++; });
+
+      let win = 0;
+      symbols.forEach(sym => {
+        const bet = bets[sym];
+        if (bet > 0 && count[sym] > 0) {
+          // 單一圖案：出現 n 次 賠率 n:1 [web:33][web:36]
+          win += bet * count[sym];
+        }
+      });
+
+      if (win > 0) {
+        money += totalBet + win; // 退回本金 + 獎金
+        setMessage("結果：" + results.join("、") + "　你贏了 " + win + "！");
+      } else {
+        // 本金已在下注時扣掉
+        setMessage("結果：" + results.join("、") + "　可惜，本局全輸。");
+      }
+
+      // 一局後清空下注
+      symbols.forEach(sym => bets[sym] = 0);
+      updateBetTiles();
+      updateMoneyInfo();
+    });
+
+    btnReset.addEventListener("click", () => {
+      money = 100;
+      symbols.forEach(sym => bets[sym] = 0);
+      diceEls.forEach(d => d.textContent = "?");
+      updateBetTiles();
+      updateMoneyInfo();
+      setMessage("已重設資金及下注，重新開局。");
+    });
+
+    // 初始化
+    updateMoneyInfo();
+    updateBetTiles();
+    setMessage("先點圖案下注，再按「搖骰」。");
+  </script>
+</body>
+</html>
