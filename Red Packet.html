@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <title>利是大抽獎</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg-color: #2c3e50;
+      --board-bg: #34495e;
+      --x-color: #e74c3c;
+      --o-color: #3498db;
+      --text-color: #ecf0f1;
+      --accent-color: #f1c40f;
+      --cell-size: 60px;
+      --gap: 5px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      user-select: none;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+
+    h1 { 
+      margin: 10px 0; 
+      font-size: 1.8rem; 
+    }
+
+    .subtitle { 
+      font-size: 0.9rem; 
+      opacity: 0.8; 
+      margin-bottom: 15px; 
+    }
+
+    .game-container {
+      background: var(--board-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      min-width: 280px;
+      max-width: 460px;
+    }
+
+    .status-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .message {
+      padding: 5px 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 20px;
+      font-size: 0.95rem;
+      color: var(--accent-color);
+      min-height: 1.2em;
+    }
+
+    .info-text {
+      font-size: 0.9rem;
+      color: #bdc3c7;
+    }
+
+    /* ===== 利是格仔區，用原本 cards-row 風格改成 grid ===== */
+    #envelope-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 12px 0;
+      justify-items: center;
+    }
+
+    .envelope {
+      position: relative;
+      width: 70px;
+      height: 100px;
+      cursor: pointer;
+      perspective: 800px;
+    }
+
+    .envelope-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .envelope.open .envelope-inner {
+      transform: rotateY(180deg);
+    }
+
+    .envelope-front,
+    .envelope-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 8px;
+    }
+
+    /* 利是封封面：用白卡 + board 色系陰影 */
+    .envelope-front {
+	  background: linear-gradient(135deg, #b30000, #ff0000);
+	  color: #fff4d0;
+	  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+	  border: 2px solid var(--accent-color);
+    }
+
+    .envelope-front::after {
+      content: "";
+      position: absolute;
+      left: 14%;
+      right: 14%;
+      top: 18%;
+      height: 4px;
+      background: linear-gradient(90deg, #ffec99, var(--accent-color), #ffec99);
+      border-radius: 999px;
+      opacity: 0.9;
+    }
+
+    /* 翻開後內頁，底色依面額 class 改色 */
+    .envelope-back {
+      border: 2px solid var(--accent-color);
+      transform: rotateY(180deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #111;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .prize-amount {
+      font-size: 22px;
+      text-shadow: 0 0 4px rgba(0,0,0,0.35);
+    }
+
+    /* ===== 面額顏色 =====
+       10元 紫色
+       20元 藍色
+       50元 綠色
+       100元 紅色
+       500元 棕色
+       1000元 金黃色
+    */
+    .prize-10 {
+      background: #7f3fbf;
+      color: #ffffff;
+    }
+
+    .prize-20 {
+      background: #1f6ad6;
+      color: #ffffff;
+    }
+
+    .prize-50 {
+      background: #2e8b57;
+      color: #ffffff;
+    }
+
+    .prize-100 {
+      background: #e74c3c;
+      color: #ffffff;
+    }
+
+    .prize-500 {
+      background: #8b4513;
+      color: #fff4d0;
+    }
+
+    .prize-1000 {
+      background: linear-gradient(135deg, #ffd700, #ffea8a);
+      color: #8b5a00;
+    }
+
+    .controls-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+      width: 100%;
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .action-btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s, color 0.2s;
+      font-weight: bold;
+    }
+
+    .btn-new-round { background-color: var(--accent-color); color: var(--bg-color); }
+    .btn-open-all { background-color: var(--o-color); color: #fff; }
+
+    .action-btn:hover:not(:disabled) {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+    .action-btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .rules {
+      font-size: 0.8rem;
+      color: #bdc3c7;
+      max-width: 400px;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 400px) {
+      :root { --cell-size: 50px; }
+      .envelope {
+        width: 60px;
+        height: 90px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>利是大抽獎</h1>
+  <div class="subtitle">點擊利是封，或者用「一鍵全開」慢慢翻開</div>
+
+  <div class="game-container">
+    <div class="status-bar">
+      <div class="message" id="message">準備好就開利是啦！</div>
+      <div class="info-text" id="prob-info">
+        金額機率（示例）：$10 50%，$20 25%，$50 15%，$100 7%，$500 2%，$1000 1%
+      </div>
+      <div class="info-text">
+        最後開出：<span id="last-prize">--</span>
+      </div>
+    </div>
+
+    <div id="envelope-grid">
+      <!-- JS 動態建立 10 個利是封 -->
+    </div>
+
+    <div class="controls-area">
+      <div class="top-buttons">
+        <button id="btn-new-round" class="action-btn btn-new-round">新一局</button>
+        <button id="btn-open-all" class="action-btn btn-open-all">一鍵全開</button>
+      </div>
+    </div>
+
+    <div class="rules">
+      <strong>說明：</strong><br>
+      ‧ 每一局有 10 個利是封，可隨意點擊打開。<br>
+      ‧ 「一鍵全開」會由上至下、左至右逐個自動翻開。<br>
+      ‧ 不同面額用不同顏色顯示，方便一眼睇到。<br>
+    </div>
+  </div>
+
+  <script>
+    // 機率設定
+    const prizeTable = [
+      { value: 10, weight: 50 },
+      { value: 20, weight: 25 },
+      { value: 50, weight: 15 },
+      { value: 100, weight: 7 },
+      { value: 500, weight: 2 },
+      { value: 1000, weight: 1 },
+    ];
+
+    function drawPrize() {
+      const totalWeight = prizeTable.reduce((sum, p) => sum + p.weight, 0);
+      let r = Math.random() * totalWeight;
+      for (const p of prizeTable) {
+        if (r < p.weight) return p.value;
+        r -= p.weight;
+      }
+      return prizeTable[0].value;
+    }
+
+    function getPrizeClass(value) {
+      switch (value) {
+        case 10: return "prize-10";
+        case 20: return "prize-20";
+        case 50: return "prize-50";
+        case 100: return "prize-100";
+        case 500: return "prize-500";
+        case 1000: return "prize-1000";
+        default: return "";
+      }
+    }
+
+    const grid = document.getElementById("envelope-grid");
+    const lastPrizeSpan = document.getElementById("last-prize");
+    const messageEl = document.getElementById("message");
+    const btnNewRound = document.getElementById("btn-new-round");
+    const btnOpenAll = document.getElementById("btn-open-all");
+
+    let isAutoOpening = false;
+
+    function setMessage(text) {
+      messageEl.textContent = text;
+    }
+
+    function createEnvelopes() {
+      grid.innerHTML = "";
+      isAutoOpening = false;
+      lastPrizeSpan.textContent = "--";
+      enableButtons(true);
+      setMessage("準備好就開利是啦！");
+
+      for (let i = 0; i < 10; i++) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "envelope";
+        wrapper.dataset.index = i;
+
+        wrapper.innerHTML = `
+          <div class="envelope-inner">
+            <div class="envelope-front"></div>
+            <div class="envelope-back">
+              <span class="prize-amount"></span>
+            </div>
+          </div>
+        `;
+
+        wrapper.addEventListener("click", () => openEnvelope(wrapper));
+        grid.appendChild(wrapper);
+      }
+    }
+
+    function openEnvelope(envDiv) {
+      if (envDiv.classList.contains("open")) return;
+
+      const prize = drawPrize();
+      const back = envDiv.querySelector(".envelope-back");
+      const amountSpan = envDiv.querySelector(".prize-amount");
+
+      amountSpan.textContent = "$" + prize;
+      back.classList.add(getPrizeClass(prize));
+
+      envDiv.classList.add("open");
+      lastPrizeSpan.textContent = "$" + prize;
+      setMessage("你開到 $" + prize + "！");
+    }
+
+    function enableButtons(enable) {
+      btnNewRound.disabled = !enable;
+      btnOpenAll.disabled = !enable && !isAutoOpening;
+    }
+
+    async function openAllSequential() {
+      if (isAutoOpening) return;
+      isAutoOpening = true;
+      enableButtons(false);
+      setMessage("一鍵全開中…");
+
+      const envelopes = Array.from(
+        grid.querySelectorAll(".envelope")
+      ).sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index));
+
+      for (const env of envelopes) {
+        if (!env.classList.contains("open")) {
+          openEnvelope(env);
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+      }
+
+      isAutoOpening = false;
+      enableButtons(true);
+      setMessage("全部已經開晒！");
+    }
+
+    btnNewRound.addEventListener("click", () => {
+      createEnvelopes();
+    });
+
+    btnOpenAll.addEventListener("click", () => {
+      openAllSequential();
+    });
+
+    // 初始化
+    createEnvelopes();
+  </script>
+</body>
+</html>
