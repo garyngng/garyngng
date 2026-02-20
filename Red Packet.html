@@ -32,15 +32,15 @@
       padding: 20px 0;
     }
 
-    h1 { 
-      margin: 10px 0; 
-      font-size: 1.8rem; 
+    h1 {
+      margin: 10px 0;
+      font-size: 1.8rem;
     }
 
-    .subtitle { 
-      font-size: 0.9rem; 
-      opacity: 0.8; 
-      margin-bottom: 15px; 
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 15px;
     }
 
     .game-container {
@@ -79,7 +79,7 @@
       color: #bdc3c7;
     }
 
-    /* ===== 利是格仔區，用原本 cards-row 風格改成 grid ===== */
+    /* ===== 利是封 grid ===== */
     #envelope-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -117,12 +117,12 @@
       border-radius: 8px;
     }
 
-    /* 利是封封面：用白卡 + board 色系陰影 */
+    /* 封面：紅色利是 */
     .envelope-front {
-	  background: linear-gradient(135deg, #b30000, #ff0000);
-	  color: #fff4d0;
-	  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-	  border: 2px solid var(--accent-color);
+      background: linear-gradient(135deg, #b30000, #ff0000);
+      color: #fff4d0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      border: 2px solid var(--accent-color);
     }
 
     .envelope-front::after {
@@ -137,25 +137,64 @@
       opacity: 0.9;
     }
 
-    /* 翻開後內頁，底色依面額 class 改色 */
+    /* 內頁：放一張「假鈔票」 */
     .envelope-back {
       border: 2px solid var(--accent-color);
       transform: rotateY(180deg);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
-      font-weight: bold;
-      color: #111;
       box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      background: #222;
+    }
+
+    /* 假鈔票版面：橫向長方形卡片 */
+    .note {
+      width: 90%;
+      height: 70%;
+      border-radius: 6px;
+      border: 2px solid rgba(255,255,255,0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .note::before {
+      content: "";
+      position: absolute;
+      inset: 10%;
+      border-radius: 999px;
+      border: 1px dashed rgba(255,255,255,0.4);
+      opacity: 0.7;
+    }
+
+    .note-top {
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      font-size: 10px;
+      opacity: 0.9;
+    }
+
+    .note-bottom {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+      font-size: 10px;
+      opacity: 0.9;
     }
 
     .prize-amount {
       font-size: 22px;
+      font-weight: bold;
       text-shadow: 0 0 4px rgba(0,0,0,0.35);
     }
 
-    /* ===== 面額顏色 =====
+    /* ===== 面額顏色（背景色給 note）=====
        10元 紫色
        20元 藍色
        50元 綠色
@@ -264,7 +303,7 @@
         金額機率（示例）：$10 50%，$20 25%，$50 15%，$100 7%，$500 2%，$1000 1%
       </div>
       <div class="info-text">
-        最後開出：<span id="last-prize">--</span>
+        本局總金額：<span id="last-prize">0</span>
       </div>
     </div>
 
@@ -283,7 +322,7 @@
       <strong>說明：</strong><br>
       ‧ 每一局有 10 個利是封，可隨意點擊打開。<br>
       ‧ 「一鍵全開」會由上至下、左至右逐個自動翻開。<br>
-      ‧ 不同面額用不同顏色顯示，方便一眼睇到。<br>
+      ‧ 不同面額用不同顏色的「假鈔票卡片」，不會用真實紙幣圖。<br>
     </div>
   </div>
 
@@ -327,6 +366,7 @@
     const btnOpenAll = document.getElementById("btn-open-all");
 
     let isAutoOpening = false;
+    let totalAmount = 0;
 
     function setMessage(text) {
       messageEl.textContent = text;
@@ -335,7 +375,8 @@
     function createEnvelopes() {
       grid.innerHTML = "";
       isAutoOpening = false;
-      lastPrizeSpan.textContent = "--";
+      totalAmount = 0;
+      lastPrizeSpan.textContent = totalAmount;
       enableButtons(true);
       setMessage("準備好就開利是啦！");
 
@@ -348,7 +389,9 @@
           <div class="envelope-inner">
             <div class="envelope-front"></div>
             <div class="envelope-back">
-              <span class="prize-amount"></span>
+              <div class="note">
+                <span class="prize-amount"></span>
+              </div>
             </div>
           </div>
         `;
@@ -362,14 +405,17 @@
       if (envDiv.classList.contains("open")) return;
 
       const prize = drawPrize();
-      const back = envDiv.querySelector(".envelope-back");
+      const note = envDiv.querySelector(".note");
       const amountSpan = envDiv.querySelector(".prize-amount");
 
       amountSpan.textContent = "$" + prize;
-      back.classList.add(getPrizeClass(prize));
+      note.classList.add(getPrizeClass(prize));
 
       envDiv.classList.add("open");
-      lastPrizeSpan.textContent = "$" + prize;
+
+      totalAmount += prize;
+      lastPrizeSpan.textContent = totalAmount;
+
       setMessage("你開到 $" + prize + "！");
     }
 
