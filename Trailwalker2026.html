@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毅行者2026 訓練計劃</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #ff6b9d;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ff6b9d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            font-size: 1.2em;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .checkpoint {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .distance {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+        
+        .level-1 { 
+            background: #4caf50; 
+            color: white; 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            font-size: 0.85em;
+            display: inline-block;
+        }
+        
+        .level-2 { 
+            background: #ff9800; 
+            color: white; 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            font-size: 0.85em;
+            display: inline-block;
+        }
+        
+        .level-3 { 
+            background: #f44336; 
+            color: white; 
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            font-size: 0.85em;
+            display: inline-block;
+        }
+        
+        .training-row {
+            background: #e8eaf6;
+        }
+        
+        .training-date {
+            font-weight: 600;
+            color: #5c6bc0;
+        }
+        
+        .training-details {
+            color: #333;
+        }
+        
+        .week-badge {
+            background: #c06c84;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .remark {
+            color: #ff5722;
+            font-weight: 600;
+            font-style: italic;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #ff6b9d15 0%, #c06c8415 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ff6b9d;
+        }
+        
+        .info-box h3 {
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .tab:hover {
+            background: #ffe5f0;
+            color: #ff6b9d;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            color: white;
+            border-color: #ff6b9d;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏔️ 毅行者2026 訓練計劃</h1>
+            <p>Oxfam Trailwalker 2026 Training Schedule</p>
+        </div>
+        
+        <div class="content">
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value">100km</div>
+                    <div class="stat-label">總距離</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="countdown-card"></div>
+                    <div class="stat-label">倒數計時</div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab" onclick="showTab('route')">📍 賽道路段</div>
+                <div class="tab active" onclick="showTab('schedule')">📅 訓練時間表</div>
+            </div>
+            
+            <!-- Route Table -->
+            <div id="route" class="tab-content">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span class="icon">🗺️</span>
+                        賽道各段資料
+                    </h2>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>路段</th>
+                                    <th>距離</th>
+                                    <th>難度</th>
+                                    <th>爬升</th>
+                                    <th>補給點</th>
+                                    <th>支援</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="checkpoint">西貢 Start - 西灣 CP1</td>
+                                    <td class="distance">15.5k</td>
+                                    <td><span class="level-1">Level 1</span></td>
+                                    <td>310m</td>
+                                    <td>士多</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">西灣 - 北潭坳 CP2</td>
+                                    <td class="distance">9.2k</td>
+                                    <td><span class="level-1">Level 1</span></td>
+                                    <td>770m</td>
+                                    <td>水機</td>
+                                    <td>UC team (Lunch)</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">北潭坳 - 企嶺下 CP3</td>
+                                    <td class="distance">10.4k</td>
+                                    <td><span class="level-2">Level 2-3</span></td>
+                                    <td>560m</td>
+                                    <td>水機</td>
+                                    <td>UC team</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">企嶺下 - 基維爾營 CP4</td>
+                                    <td class="distance">12.6k</td>
+                                    <td><span class="level-3">Level 3</span></td>
+                                    <td>920m</td>
+                                    <td>-</td>
+                                    <td>包點先生(比賽)</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">基維爾營 - 畢架山 CP5</td>
+                                    <td class="distance">7.5k</td>
+                                    <td><span class="level-1">Level 1</span></td>
+                                    <td>670m</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">畢架山 - 走私坳 CP6</td>
+                                    <td class="distance">5.9k</td>
+                                    <td><span class="level-1">Level 1</span></td>
+                                    <td>310m</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">走私坳 - 鉛礦坳 CP7</td>
+                                    <td class="distance">8.5k</td>
+                                    <td><span class="level-3">Level 3-4</span></td>
+                                    <td>770m</td>
+                                    <td>城門水塘水機</td>
+                                    <td>UC team(城門)</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">鉛礦坳 - 大帽山 CP8</td>
+                                    <td class="distance">8.9k</td>
+                                    <td><span class="level-3">Level 3</span></td>
+                                    <td>1170m</td>
+                                    <td>-</td>
+                                    <td>包點先生(比賽)</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">大帽山 - 大欖涌 CP9</td>
+                                    <td class="distance">9.5k</td>
+                                    <td><span class="level-1">Level 1</span></td>
+                                    <td>310m</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="checkpoint">大欖涌 - 哈羅 CP10</td>
+                                    <td class="distance">11.3k</td>
+                                    <td><span class="level-1">Level 1</span></td>
+                                    <td>460m</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>📊 完成時間估算公式</h3>
+                        <p><strong>雙坳54km</strong> (北潭坳-大帽山) × <strong>1.6-1.8</strong> = 完成時間</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Training Schedule -->
+            <div id="schedule" class="tab-content active">
+                <div class="section">
+                    <h2 class="section-title">
+                        <span class="icon">📅</span>
+                        訓練時間表
+                    </h2>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>訓練內容</th>
+                                    <th>訓練週</th>
+                                    <th>練習日子</th>
+                                    <th>開始時間</th>
+                                    <th>出發地點</th>
+                                    <th>目標時間</th>
+                                    <th>備註</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="training-row">
+                                    <td class="training-date">1-Mar</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 35</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td><span class="remark">Kick-off</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">8-Mar</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 34</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">15-Mar</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 33</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">22-Mar</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 32</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr class="training-row">
+                                    <td class="training-date">29-Mar</td>
+                                    <td class="training-details">四徑比賽 麥徑CP6-7 針草帽 16K</td>
+                                    <td><span class="week-badge">Week 31</span></td>
+                                    <td>29-Mar</td>
+                                    <td>08:30</td>
+                                    <td>城門水塘</td>
+                                    <td>Target: 2:30:00</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">5-Apr</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 30</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">12-Apr</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 29</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">19-Apr</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 28</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr class="training-row">
+                                    <td class="training-date">26-Apr</td>
+                                    <td class="training-details">四徑比賽 CP9-10 坑山八仙嶺 17.4K</td>
+                                    <td><span class="week-badge">Week 27</span></td>
+                                    <td>26-Apr</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">3-May</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 26</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+								<tr>
+                                    <td class="training-date">10-May</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 25</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">17-May</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 24</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">24-May</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 23</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">31-May</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 22</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">7-Jun</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 21</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">14-Jun</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 20</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">21-Jun</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 19</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">28-Jun</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 18</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">5-Jul</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 17</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">12-Jul</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 16</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">19-Jul</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 15</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">26-Jul</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 14</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">2-Aug</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 13</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">9-Aug</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 12</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">16-Aug</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 11</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">23-Aug</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 10</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td><span class="remark">Gary 放假</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">30-Aug</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 9</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">6-Sep</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 8</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">13-Sep</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 7</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">20-Sep</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 6</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">27-Sep</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 5</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">4-Oct</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 4</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">11-Oct</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 3</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">18-Oct</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 2</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td class="training-date">25-Oct</td>
+                                    <td>-</td>
+                                    <td><span class="week-badge">Week 1</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr class="training-row">
+                                    <td class="training-date">1-Nov</td>
+                                    <td class="training-details">🏆 比賽日</td>
+                                    <td><span class="week-badge">Week 0</span></td>
+                                    <td>1-Nov</td>
+                                    <td>09:30</td>
+                                    <td>西貢</td>
+                                    <td>-</td>
+                                    <td><span class="remark">加油！💪</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>⏱️ 倒數計時</h3>
+                        <p id="countdown"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabId) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        function updateCountdown() {
+            const raceDate = new Date('2026-11-01T09:30:00');
+            const now = new Date();
+            const diff = raceDate - now;
+            
+            if (diff > 0) {
+                const weeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
+                const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 7)) / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown').innerHTML = 
+                    `距離比賽還有 <strong style="color: #ff6b9d; font-size: 1.2em;">${weeks}</strong> 週 ` +
+                    `<strong style="color: #c06c84;">${days}</strong> 天 ` +
+                    `<strong>${hours}</strong> 小時 ` +
+                    `<strong>${minutes}</strong> 分 ` +
+                    `<strong>${seconds}</strong> 秒`;
+                
+                document.getElementById('countdown-card').innerHTML = 
+                    `<div style="font-size: 0.5em;">${weeks}週 ${days}天</div>`;
+            } else {
+                document.getElementById('countdown').innerHTML = '比賽已開始！加油！💪';
+                document.getElementById('countdown-card').innerHTML = '開始！';
+            }
+        }
+        
+        // Update countdown every second
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
