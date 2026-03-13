@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hope Camp 2026 - Kept in the World</title>
+  <style>
+    :root {
+      --orange: #ff9800;
+      --orange-light: #ffe0b2;
+      --orange-dark: #f57c00;
+      --text-main: #3d2a00;
+      --bg: #fff8e6;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      margin: 0;
+      padding: 12px 12px 80px 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "Microsoft JhengHei", "PingFang TC", sans-serif;
+      line-height: 1.6;
+      background: radial-gradient(circle at top, #fff3d0, #ffe7b8, #ffd57a);
+      color: var(--text-main);
+    }
+    .page {
+      max-width: 960px;
+      margin: 0 auto 16px auto;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 18px 16px 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    header.page-header {
+      text-align: center;
+      padding: 12px 8px 8px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fffaf2;
+      margin: -4px -4px 10px -4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 4px 0 2px;
+      letter-spacing: 0.05em;
+    }
+    header.page-header p {
+      margin: 2px 0;
+      font-size: 13px;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 10px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid var(--orange-light);
+      color: var(--orange-dark);
+    }
+    h3 {
+      font-size: 16px;
+      margin: 10px 0 4px;
+      color: #bf6200;
+    }
+    h4 {
+      font-size: 14px;
+      margin: 8px 0 4px;
+      color: #994900;
+    }
+    p {
+      margin: 3px 0;
+      font-size: 14px;
+    }
+    ul, ol {
+      margin: 4px 0;
+      padding-left: 18px;
+      font-size: 14px;
+    }
+    li {
+      margin: 2px 0;
+    }
+    .section-label {
+      font-weight: 600;
+      margin-top: 6px;
+      margin-bottom: 2px;
+      color: #aa5c00;
+    }
+    .bilingual {
+      margin: 4px 0 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(255, 224, 178, 0.6);
+    }
+    .bilingual .en {
+      font-size: 13px;
+      color: #4a3100;
+    }
+    .bilingual .zh {
+      font-size: 13px;
+      color: #5b3a00;
+    }
+    .verse-ref {
+      font-style: italic;
+      font-size: 12px;
+      color: #7a4f00;
+      margin-bottom: 2px;
+    }
+    .reflect-box {
+      margin: 6px 0;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(255, 249, 196, 0.9);
+      border: 1px dashed rgba(255, 193, 7, 0.7);
+      font-size: 13px;
+    }
+    .reflect-box ul {
+      padding-left: 18px;
+      margin: 2px 0;
+    }
+    .note-lines {
+      margin: 4px 0 6px;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px dashed rgba(0,0,0,0.15);
+      min-height: 40px;
+      font-size: 13px;
+      white-space: pre-line;
+      background: rgba(255,255,255,0.7);
+    }
+    .tagline {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      opacity: 0.9;
+    }
+    .small {
+      font-size: 12px;
+      color: #6d4c00;
+    }
+    textarea[data-note-id] {
+      width: 100%;
+      min-height: 80px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.15);
+      padding: 6px 8px;
+      font-size: 13px;
+      resize: vertical;
+      background: #fffef8;
+    }
+
+    /* Top category nav */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 998;
+      background: linear-gradient(90deg, #ffb74d, #ffcc80);
+      padding: 6px 4px;
+      margin: 0 auto 10px auto;
+      max-width: 960px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      border-radius: 0 0 12px 12px;
+    }
+    .top-nav-inner {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 6px;
+      padding: 0 2px;
+    }
+    .top-nav a {
+      flex: 0 0 auto;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 248, 225, 0.95);
+      color: #5d3b00;
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    .top-nav a.active {
+      background: #ff9800;
+      color: #fff;
+      border-color: rgba(255,255,255,0.9);
+    }
+
+    /* Floating notes window */
+    .floating-notes-btn {
+      position: fixed;
+      bottom: 70px;
+      right: 16px;
+      z-index: 9998;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #ff7043;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 20px;
+      line-height: 40px;
+      text-align: center;
+      padding: 0;
+    }
+    .floating-notes-panel {
+      position: fixed;
+      bottom: 120px;
+      right: 16px;
+      z-index: 9997;
+      width: 260px;
+      max-width: 85vw;
+      background: rgba(255, 248, 225, 0.98);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.9);
+      display: none;
+    }
+    .floating-notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      background: linear-gradient(135deg, #ffb74d, #ffa726);
+      border-radius: 12px 12px 0 0;
+      color: #4e2a00;
+      font-size: 13px;
+    }
+    .floating-notes-header span {
+      font-weight: 600;
+    }
+    .floating-notes-close {
+      border: none;
+      background: transparent;
+      color: #4e2a00;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 4px;
+    }
+    .floating-notes-body {
+      padding: 6px 8px 8px;
+    }
+    .floating-notes-body textarea {
+      width: 100%;
+      min-height: 120px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.12);
+      font-size: 13px;
+      padding: 6px 8px;
+      resize: vertical;
+      background: #fffef9;
+    }
+
+    /* Floating scripture compare window */
+    .floating-scripture-btn {
+      position: fixed;
+      bottom: 120px;
+      right: 16px;
+      z-index: 9998;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #5c6bc0;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 18px;
+      line-height: 40px;
+      text-align: center;
+      padding: 0;
+    }
+    .floating-scripture-panel {
+      position: fixed;
+      bottom: 180px;
+      right: 16px;
+      z-index: 9997;
+      width: 280px;
+      max-width: 88vw;
+      background: rgba(236, 239, 255, 0.98);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.9);
+      display: none;
+    }
+    .floating-scripture-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      background: linear-gradient(135deg, #7986cb, #5c6bc0);
+      border-radius: 12px 12px 0 0;
+      color: #f5f5ff;
+      font-size: 13px;
+    }
+    .floating-scripture-header span {
+      font-weight: 600;
+    }
+    .floating-scripture-close {
+      border: none;
+      background: transparent;
+      color: #f5f5ff;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 4px;
+    }
+    .floating-scripture-body {
+      padding: 6px 8px 8px;
+    }
+    .floating-scripture-body textarea {
+      width: 100%;
+      min-height: 130px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.12);
+      font-size: 12px;
+      padding: 4px 6px;
+      resize: vertical;
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+      line-height: 1.4;
+    }
+    .floating-scripture-body .hint {
+      font-size: 11px;
+      color: #3949ab;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="top-nav-inner">
+    <a href="#top" class="active">頂部</a>
+    <a href="#quiet-time">Quiet Time 靈修</a>
+    <a href="#lesson1">第一課</a>
+    <a href="#lesson2">第二課</a>
+    <a href="#lesson3">第三課</a>
+    <a href="#activity">活動問題</a>
+    <a href="#other">其他內容</a>
+  </div>
+</div>
+
+<div class="page" id="top">
+  <header class="page-header">
+    <div class="badge">ANNUAL CAMP 2026</div>
+    <h1>Salt &amp; Light – Kept in the World</h1>
+    <p>“I do not pray that You should take them out of the world, but that You should keep them from the evil one.”</p>
+    <p class="small">John 17:15</p>
+    <p class="tagline">14–15 March 2026 · Hope of God Church Hong Kong</p>
+  </header>
+
+  <h2>CAMP HAND BOOK INFORMATION 營刊資料</h2>
+
+  <p class="section-label">A. CAMP PROGRAM 節目</p>
+  <ul>
+    <li>TIME TABLE 時間表</li>
+  </ul>
+
+  <p class="section-label">B. CAMP SITE INFORMATION 營地資料</p>
+  <ul>
+    <li>CAMP SITE MAP 營地地圖</li>
+    <li>RULES AND REGULATIONS 營地守則</li>
+    <li>PUBLIC TRANSPORTATION 公共交通</li>
+  </ul>
+
+  <p class="section-label">C. CONTACT 聯絡</p>
+  <ul>
+    <li>GENERAL ASSISTANCE 查詢</li>
+    <li>MEDICAL SERVICES 醫療服務</li>
+  </ul>
+
+  <p class="section-label">E. TEACHING MATERIALS 教導內容</p>
+  <ul>
+    <li>QUIET TIME MATERIALS 靈修資料</li>
+    <li>TEACHING MATERIALS 教導內容</li>
+    <li>ACTIVITY 活動</li>
+  </ul>
+
+  <p class="section-label">F. OTHER MATERIALS 其他內容</p>
+  <ul>
+    <li>EVALUATION FORM 意見表 QR CODE</li>
+    <li>TESTIMONIES 見證 QR CODE</li>
+    <li>NOTES 筆記</li>
+  </ul>
+</div>
+
+<div class="page" id="quiet-time">
+  <h2>E. TEACHING MATERIALS 教導內容</h2>
+
+  <h3>Quiet Time Materials 靈修資料</h3>
+  <p>在屬靈意義上，征服迦南地代表我們要實際地取得神應許給信徒的產業和豐盛，也代表著我們作為信徒的使命，就是「贏取世界」，帶領世人進入基督裡真正的安息。</p>
+  <ul>
+    <li>神邀請所有信徒加入約書亞的軍隊【約書亞預表主耶穌】，在地上擴展神的國度。</li>
+    <li>這方面需要我們透過建立信心、行動和屬靈的成長，不斷更新改變自己的生命。</li>
+    <li>同時，也需要我們參與個人傳福音和服事他人，並與基督的肢體（教會）一起同工，以神的愛和能力去影響世界。</li>
+    <li>這就是耶穌所說，我們需要成為地上的鹽和世界的光（馬太福音 5:13–16）。</li>
+  </ul>
+
+  <div class="bilingual">
+    <p class="verse-ref">馬太福音 5:13–16【標準中文版】</p>
+    <p class="zh">「你們是地上的鹽。鹽如果失去了味道，還能用什麼來把它醃成鹹的呢？它再也沒有用處，只好被丟在外面，任人踐踏。你們是世界的光。建在山上的城是不能隱藏的；人點亮了油燈，也不會放在斗底下，而會放在燈臺上，它就照亮屋子裡所有的人。同樣，你們的光也應當照耀在人前，使他們看見你們的美好工作，就榮耀你們在天上的父。」</p>
+  </div>
+
+  <div class="reflect-box">
+    <p><strong>反思問題：</strong></p>
+    <ul>
+      <li>「地上的鹽」和「世界的光」分別是什麼意思？</li>
+      <li>在各生活範疇中，你如何保持一份「鹽的味道」？</li>
+      <li>你可以在哪些方面、或透過哪些方式成為世上的光，從而反映出耶穌是生命的光？</li>
+      <li>你會怎樣跟教會（弟兄姊妹們）一起行動，更有效地成為地上的鹽和世上的光？</li>
+    </ul>
+  </div>
+
+  <p>讓我們記住：單憑自身的力量，要成為鹽和光來完成大使命，是十分困難的。另一方面，大使命並不是一份「臨時工作」或「兼職工作」，而是需要我們終其一生，全情參與。</p>
+  <ul>
+    <li>我們的生命是歷史的一部分；我們的生命故事也是祂的故事的一部分。</li>
+    <li>我們並不是在選擇是否要參與祂的使命；我們的生命本身就是大使命的一部分，只是要去發掘神呼召我們怎樣參與。</li>
+    <li>越認識這真理，越會影響我們在生活中如何作決定——我的決定能否切合祂的故事？有否幫助實現祂的使命？</li>
+  </ul>
+
+  <p>當我們參與神的使命，免不了會遇上仇敵在不同層面的反抗，甚至攻擊。仇敵特別會利用一些不明顯的手段，攻擊我們的思維：</p>
+  <ul>
+    <li>拿我們以往所犯的錯、我們的弱點來指控，使我們以為神不會使用我們，或者覺得自己不適合事奉。</li>
+    <li>利用世上的人和事來欺騙我們。</li>
+  </ul>
+
+  <div class="reflect-box">
+    <p><strong>反思問題：</strong></p>
+    <ul>
+      <li>營會的教導中提及，撒旦會利用哪些方式來欺哄現今世代的人（包括欺騙基督徒）？例如：身份混淆、「你就是自己的神」、「作點事情吧！單靠信心是不行的！」</li>
+      <li>當你意識到仇敵的欺騙手段與謊言時，可以怎樣以真理抵擋？</li>
+      <li>今天你在基督裡的真正身份是什麼？</li>
+      <li>你會怎樣敬畏神，真正將神看作生命中的神（而非看自己是神）？</li>
+      <li>你怎樣分辨「不是出於信心的行為」與「出於信心的順服」？</li>
+    </ul>
+  </div>
+
+  <p>我們只要不斷認定和提醒自己，神在我們生命中的地位，並我們在神心中的地位，就不用成為仇敵欺騙手段下的受害者。</p>
+  <ul>
+    <li>帶著正確的敬畏神的心：承認神是全能的創造主，但同時以無盡的愛成為我們的救贖主。</li>
+    <li>帶著一個正確的觀念看自己：沒有主耶穌，我們只是邁向永死的罪人；但透過對主耶穌的信靠，我們已成為神所愛的兒女，也成為祂所揀選、呼召的使者，在世界中傳揚神與世人和好的信息。</li>
+  </ul>
+  <p>我們越是從心底裡明白真理，就越能察覺、分辨，以至選擇拒絕相信撒旦的謊言。</p>
+</div>
+
+<div class="page" id="lesson1">
+  <h2>Lesson 1：Our Mission in This World<br>第一課：我們在世上的使命</h2>
+
+  <h3>The Conquest of Canaan – Bringing the World to True Rest in Christ<br>征服迦南地 – 帶領全地進入基督裏真正的安息</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 4:20, 24 · 約書亞記 4:20, 24</p>
+    <p class="en">And those twelve stones which they took out of the Jordan, Joshua set up in Gilgal. … that all the peoples of the earth may know the hand of the Lord, that it is mighty, that you may fear the Lord your God forever.</p>
+    <p class="zh">他們從約旦河中取來的那十二塊石頭，約書亞就立在吉甲，… 要使地上萬民都知道耶和華的手大有能力，也要使你們永遠敬畏耶和華你們的神。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 21:43–45 · 約書亞記 21:43–45</p>
+    <p class="en">Thus the Lord gave to Israel all the Land which he swore to give to their fathers; and having taken possession of it they settled there. And the Lord gave them rest on every side, just as he had sworn to their fathers; not one of all their enemies had withstood them, for the Lord had given all their enemies into their hands. Not one of all the good promises which the Lord had made to the house of Israel had failed; all came to pass.</p>
+    <p class="zh">這樣，耶和華將從前向他們列祖起誓所應許的全地賜給以色列人，他們就得了為業，住在其中。耶和華照著向他們列祖起誓所應許的一切話，使他們四境平安。他們一切仇敵中，沒有一人在他們面前站立得住。耶和華把一切仇敵都交在他們手中。耶和華應許賜福給以色列家的話一句也沒有落空，都應驗了。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Matthew 11:28 · 馬太福音 11:28</p>
+    <p class="en">Come to Me, all you who labor and are heavy laden, and I will give you rest.</p>
+    <p class="zh">凡勞苦擔重擔的人，可以到我這裡來，我就使你們得安息。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Hebrews 4:2–3 · 希伯來書 4:2–3</p>
+    <p class="en">For indeed the gospel was preached to us as well as to them; but the word which they heard did not profit them, not being mixed with faith in those who heard it. For we who have believed do enter that rest, as He has said: “So I swore in My wrath, ‘They shall not enter My rest,’ ” although the works were finished from the foundation of the world.</p>
+    <p class="zh">因為有福音傳給我們，像傳給他們一樣。只是所聽見的道於他們無益，因為他們沒有信心與所聽見的道調和。但我們已經相信的人得以進入那安息，正如神所說：「我在怒中起誓說：『他們斷不可進入我的安息。』」其實造物之工，從創世以來已經成全了。</p>
+  </div>
+
+  <h3>Salt of the Earth and Light of the World – Personal and Corporate Involvement<br>地上的鹽與世界的光 —— 個人與協作參與</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Matthew 5:13–16 · 馬太福音 5:13–16</p>
+    <p class="en">“You are the salt of the earth. But if the salt loses its saltiness, how can it be made salty again? It is no longer good for anything, except to be thrown out and trampled underfoot. “You are the light of the world. A town built on a hill cannot be hidden. Neither do people light a lamp and put it under a bowl. Instead they put it on its stand, and it gives light to everyone in the house. In the same way, let your light shine before others, that they may see your good deeds and glorify your Father in heaven.”</p>
+    <p class="zh">「你們是地上的鹽。鹽如果失去了味道，還能用什麼來把它醃成鹹的呢？它再也沒有用處，只好被丟在外面，任人踐踏。你們是世界的光。建在山上的城是不能隱藏的；人點亮了油燈，也不會放在斗底下，而會放在燈臺上，它就照亮屋子裡所有的人。同樣，你們的光也應當照耀在人前，使他們看見你們的美好工作，就榮耀你們在天上的父。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Ephesians 3:9–11 · 以弗所書 3:9–11</p>
+    <p class="en">…to make all see what is the fellowship of the mystery, which from the beginning of the ages has been hidden in God who created all things through Jesus Christ; to the intent that now the manifold wisdom of God might be made known by the church to the principalities and powers in the heavenly places, according to the eternal purpose which He accomplished in Christ Jesus our Lord.</p>
+    <p class="zh">又使眾人都明白，這歷代以來隱藏在創造萬物之神裡的奧祕是如何安排的，為要藉著教會，使天上執政的、掌權的現在得知神百般的智慧。這是照神從萬世以前在我們主基督耶穌裡所定的旨意。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Ephesians 1:22–23 · 以弗所書 1:22–23</p>
+    <p class="en">(MSG) The church, you see, is not peripheral to the world; the world is peripheral to the church. The church is Christ’s body, in which he speaks and acts, by which he fills everything with his presence.</p>
+    <p class="zh">又將萬有服在他的腳下，使他為教會做萬有之首。教會是他的身體，是那充滿萬有者所充滿的。</p>
+  </div>
+
+  <h3>We are Part of His Story 我們就是祂故事的一部分</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Genesis 3:21 · 創世記 3:21</p>
+    <p class="en">Also for Adam and his wife the Lord God made tunics of skin, and clothed them.</p>
+    <p class="zh">耶和華神為亞當和他妻子用皮子做衣服給他們穿。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Revelation 13:8 · 啟示錄 13:8</p>
+    <p class="en">All inhabitants of the earth will worship the beast—all whose names have not been written in the Lamb’s book of life, the Lamb who was slain from the creation of the world.</p>
+    <p class="zh">凡住在地上、名字從創世以來沒有記在被殺之羔羊生命冊上的人，都要拜牠。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Exodus 19:4–8 · 出埃及記 19:4–8</p>
+    <p class="en">“You have seen what I did to the Egyptians, and how I bore you on eagles’ wings and brought you to Myself. Now therefore, if you will indeed obey My voice and keep My covenant, then you shall be a special treasure to Me above all people; for all the earth is Mine. And you shall be to Me a kingdom of priests and a holy nation.” … Then all the people answered together and said, “All that the Lord has spoken we will do.”</p>
+    <p class="zh">我向埃及人所行的事，你們都看見了；且看見我如鷹將你們背在翅膀上，帶來歸我。如今你們若實在聽從我的話，遵守我的約，就要在萬民中做屬我的子民，因為全地都是我的。你們要歸我做祭司的國度，為聖潔的國民。… 百姓都同聲回答說：「凡耶和華所說的，我們都要遵行。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Genesis 12:2–3 · 創世記 12:2–3</p>
+    <p class="en">I will make you into a great nation, and I will bless you; I will make your name great, and you will be a blessing… all peoples on earth will be blessed through you.</p>
+    <p class="zh">我必叫你成為大國，我必賜福給你，叫你的名為大，你也要叫別人得福。為你祝福的，我必賜福於他；那咒詛你的，我必咒詛他。地上的萬族都要因你得福。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Ephesians 5:25–26 · 以弗所書 5:25–26</p>
+    <p class="en">Husbands, love your wives, just as Christ also loved the church and gave Himself for her, that He might sanctify and cleanse her with the washing of water by the word.</p>
+    <p class="zh">你們做丈夫的，要愛你們的妻子，正如基督愛教會，為教會捨己，要用水藉著道把教會洗淨，成為聖潔。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 8:28–30 · 羅馬書 8:28–30</p>
+    <p class="en">And we know that all things work together for good to those who love God, to those who are the called according to His purpose. For whom He foreknew, He also predestined to be conformed to the image of His Son… Moreover whom He predestined, these He also called; whom He called, these He also justified; and whom He justified, these He also glorified.</p>
+    <p class="zh">我們曉得萬事都互相效力，叫愛神的人得益處，就是按他旨意被召的人。因為他預先所知道的人，就預先定下效法他兒子的模樣，使他兒子在許多弟兄中做長子；預先所定下的人又召他們來，所召來的人又稱他們為義，所稱為義的人又叫他們得榮耀。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Acts 15:1–2, 15–18 · 使徒行傳 15:1–2, 15–18</p>
+    <p class="en">Certain men came down from Judea and taught the brethren, “Unless you are circumcised according to the custom of Moses, you cannot be saved.” Therefore, when Paul and Barnabas had no small dissension and dispute with them, they determined that Paul and Barnabas… should go up to Jerusalem… “After this I will return and will rebuild the tabernacle of David, which has fallen down… so that the rest of mankind may seek the LORD, even all the Gentiles who are called by My name… Known to God from eternity are all His works.”</p>
+    <p class="zh">有幾個人從猶太下來，教導弟兄們說：「你們若不照摩西的規例受割禮，就不能得救。」保羅和巴拿巴與他們大大地爭執辯論起來。大家就派保羅、巴拿巴和他們中間的幾個人，為這個問題上耶路撒冷去見使徒和長老。…「此後我要回來，重建大衛倒塌了的帳幕，重建它損壞之處，把它重新豎立起來，使餘下的人，就是所有稱為我名下的外族人，都尋求主，這是自古以來就顯明的。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">1 Peter 1:10–12 · 彼得前書 1:10–12</p>
+    <p class="en">(NLT) This salvation was something even the prophets wanted to know more about when they prophesied about this gracious salvation prepared for you… They were told that their messages were not for themselves, but for you. And now this Good News has been announced to you by those who preached in the power of the Holy Spirit sent from heaven. It is all so wonderful that even the angels are eagerly watching these things happen.</p>
+    <p class="zh">論到這救恩，那預先說你們要得恩典的眾先知早已詳細地尋求考察，就是考察在他們心裡基督的靈，預先證明基督受苦難、後來得榮耀是指著什麼時候，並怎樣的時候。他們得了啟示，知道他們所傳講的一切事，不是為自己，乃是為你們。那靠著從天上差來的聖靈傳福音給你們的人，現在將這些事報給你們；天使也願意詳細察看這些事。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Acts 2:46–47 · 使徒行傳 2:46–47</p>
+    <p class="en">So continuing daily with one accord in the temple, and breaking bread from house to house, they ate their food with gladness and simplicity of heart, praising God and having favor with all the people. And the Lord added to the church daily those who were being saved.</p>
+    <p class="zh">他們天天同心合意恆切地在殿裡，且在家中掰餅，存著歡喜、誠實的心用飯，讚美神，得眾民的喜愛。主將得救的人天天加給他們。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Deuteronomy 4:5–8 · 申命記 4:5–8</p>
+    <p class="en">See, I have taught you decrees and laws as the Lord my God commanded me… Observe them carefully, for this will show your wisdom and understanding to the nations… What other nation is so great as to have their gods near them the way the Lord our God is near us whenever we pray to him? And what other nation is so great as to have such righteous decrees and laws as this body of laws I am setting before you today?</p>
+    <p class="zh">我照著耶和華我神所吩咐的，將律例、典章教訓你們，使你們在所要進去得為業的地上遵行。所以你們要謹守遵行，這就是你們在萬民眼前的智慧、聰明。他們聽見這一切律例，必說：「這大國的人真是有智慧，有聰明！」哪一大國的人有神與他們相近，像耶和華我們的神，在我們求告他的時候與我們相近呢？又哪一大國有這樣公義的律例、典章，像我今日在你們面前所陳明的這一切律法呢？」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">1 Peter 2:9 · 彼得前書 2:9</p>
+    <p class="en">But you are a chosen generation, a royal priesthood, a holy nation, His own special people, that you may proclaim the praises of Him who called you out of darkness into His marvelous light.</p>
+    <p class="zh">唯有你們是被揀選的族類，是有君尊的祭司，是聖潔的國度，是屬神的子民，要叫你們宣揚那召你們出黑暗、入奇妙光明者的美德。</p>
+  </div>
+
+  <h3>My Notes – Lesson 1 我的筆記</h3>
+  <textarea data-note-id="lesson1"></textarea>
+</div>
+
+<div class="page" id="lesson2">
+  <h2>Lesson 2：Deceptions of the Enemy<br>第二課：仇敵的欺騙手段</h2>
+
+  <h3>One Common Enemy: Be Sober and Be Vigilant<br>一個共同敵人：務要謹守、警醒</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:1–2 · 約書亞記 9:1–2</p>
+    <p class="en">And it came to pass when all the kings who were on this side of the Jordan, in the hills and in the lowland and in all the coasts of the Great Sea toward Lebanon—the Hittite, the Amorite, the Canaanite, the Perizzite, the Hivite, and the Jebusite—heard about it, that they gathered together to fight with Joshua and Israel with one accord.</p>
+    <p class="zh">約旦河西住山地、高原，並對著黎巴嫩山沿大海一帶的諸王，就是赫人、亞摩利人、迦南人、比利洗人、希未人、耶布斯人的諸王，聽見這事，就都聚集，同心合意地要與約書亞和以色列人爭戰。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Deuteronomy 7:1 · 申命記 7:1</p>
+    <p class="en">When the Lord your God brings you into the land which you go to possess, and has cast out many nations before you, the Hittites and the Girgashites and the Amorites and the Canaanites and the Perizzites and the Hivites and the Jebusites, seven nations greater and mightier than you,</p>
+    <p class="zh">耶和華你神領你進入要得為業之地，從你面前趕出許多國民，就是赫人、革迦撒人、亞摩利人、迦南人、比利洗人、希未人、耶布斯人，共七國的民，都比你強大。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">1 Peter 5:8–9 · 彼得前書 5:8–9</p>
+    <p class="en">Be sober, be vigilant; because your adversary the devil walks about like a roaring lion, seeking whom he may devour. Resist him, steadfast in the faith, knowing that the same sufferings are experienced by your brotherhood in the world.</p>
+    <p class="zh">務要謹守、警醒，因為你們的仇敵魔鬼如同吼叫的獅子，遍地遊行，尋找可吞吃的人。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Revelation 12:10 · 啟示錄 12:10</p>
+    <p class="en">“Now salvation, and strength, and the kingdom of our God, and the power of His Christ have come, for the accuser of our brethren, who accused them before our God day and night, has been cast down.”</p>
+    <p class="zh">隨後，我聽見天上有一個大聲音說：「我們神的救恩、大能、國度，和他基督的權柄，現在都來到了！因為我們弟兄的控告者，就是那日夜在我們神面前控告他們的，已經被摔下去了。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 8:33–34 · 羅馬書 8:33–34</p>
+    <p class="en">Who shall bring a charge against God’s elect? It is God who justifies. Who is he who condemns? It is Christ who died, and furthermore is also risen, who is even at the right hand of God, who also makes intercession for us.</p>
+    <p class="zh">誰能控告神所揀選的人呢？有神稱他們為義了。誰能定他們的罪呢？有基督耶穌已經死了，而且從死裡復活，現今在神的右邊，也替我們祈求。</p>
+  </div>
+
+  <h3>Deceptions! Deceptions! Deceptions!<br>矇騙！矇騙！矇騙！</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:6, 15 · 約書亞記 9:6, 15</p>
+    <p class="en">And they went to Joshua, to the camp at Gilgal, and said to him and to the men of Israel, “We have come from a far country; now therefore, make a covenant with us.” … So Joshua made peace with them, and made a covenant with them to let them live; and the rulers of the congregation swore to them.</p>
+    <p class="zh">他們到吉甲營中見約書亞，對他和以色列人說：「我們是從遠方來的，現在求你與我們立約。」… 於是約書亞與他們講和，與他們立約，容他們活著。會眾的首領也向他們起誓。</p>
+  </div>
+
+  <h4>Identity Confusion 身份混淆</h4>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:3–4 · 約書亞記 9:3–4</p>
+    <p class="en">But when the inhabitants of Gibeon heard what Joshua had done to Jericho and Ai, they worked craftily, and went and pretended to be ambassadors.</p>
+    <p class="zh">基遍的居民聽見約書亞向耶利哥和艾城所行的事，就設詭計，假充使者，</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">2 Corinthians 11:14 · 哥林多後書 11:14</p>
+    <p class="en">And no wonder! For Satan himself transforms himself into an angel of light.</p>
+    <p class="zh">這也不足為怪，因為連撒旦也裝作光明的天使。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Psalm 139:13–14 · 詩篇 139:13–14</p>
+    <p class="en">For You formed my inward parts; You covered me in my mother’s womb. I will praise You, for I am fearfully and wonderfully made; marvelous are Your works, and that my soul knows very well.</p>
+    <p class="zh">我的肺腑是你所造的，我在母腹中，你已覆庇我。我要稱謝你，因我受造奇妙可畏；你的作為奇妙，這是我心深知道的。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">2 Corinthians 5:17–20 · 哥林多後書 5:17–20</p>
+    <p class="en">Therefore, if anyone is in Christ, he is a new creation; old things have passed away; behold, all things have become new. Now all things are of God, who has reconciled us to Himself through Jesus Christ, and has given us the ministry of reconciliation… Now then, we are ambassadors for Christ, as though God were pleading through us: we implore you on Christ’s behalf, be reconciled to God.</p>
+    <p class="zh">若有人在基督裡，他就是新造的人，舊事已過，都變成新的了。一切都是出於神，他藉著基督使我們與他和好，又將勸人與他和好的職分賜給我們。… 所以，我們做基督的使者，就好像神藉我們勸你們一般，我們替基督求你們與神和好。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Colossians 4:7 · 歌羅西書 4:7</p>
+    <p class="en">Tychicus, a beloved brother, faithful minister, and fellow servant in the Lord, will tell you all the news about me.</p>
+    <p class="zh">有我親愛的兄弟推基古要將我一切的事都告訴你們。他是忠心的執事，和我一同做主的僕人。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Philippians 2:25 · 腓立比書 2:25</p>
+    <p class="en">Yet I considered it necessary to send to you Epaphroditus, my brother, fellow worker, and fellow soldier, but your messenger and the one who ministered to my need.</p>
+    <p class="zh">然而，我想必須打發以巴弗提到你們那裡去，他是我的兄弟，與我一同做工一同當兵，是你們所差遣的，也是供給我需用的。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 12:6–8 · 羅馬書 12:6–8</p>
+    <p class="en">Having then gifts differing according to the grace that is given to us, let us use them: if prophecy, let us prophesy in proportion to our faith; or ministry, let us use it in our ministering; he who teaches, in teaching; he who exhorts, in exhortation; he who gives, with liberality; he who leads, with diligence; he who shows mercy, with cheerfulness.</p>
+    <p class="zh">按我們所得的恩賜，各有不同。或說預言，就當照著信心的程度說預言；或做執事，就當專一執事；或做教導的，就當專一教導；或做勸化的，就當專一勸化；施捨的，就當誠實；治理的，就當殷勤；憐憫人的，就當甘心。</p>
+  </div>
+
+  <h4>You Are Your Own God 你就是自己的神</h4>
+
+  <div class="bilingual">
+    <p class="verse-ref">Genesis 3:5 · 創世記 3:5</p>
+    <p class="en">For God knows that in the day you eat of it your eyes will be opened, and you will be like God, knowing good and evil.</p>
+    <p class="zh">因為神知道你們吃的日子眼睛就明亮了，你們便如神能知道善惡。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:7–10, 14–15 · 約書亞記 9:7–10, 14–15</p>
+    <p class="en">Then the men of Israel said to the Hivites, “Perhaps you dwell among us; so how can we make a covenant with you?” But they said to Joshua, “We are your servants.” … So they said to him: “From a very far country your servants have come, because of the name of the Lord your God… Then the men of Israel took some of their provisions; but they did not ask counsel of the Lord. So Joshua made peace with them, and made a covenant with them to let them live; and the rulers of the congregation swore to them.</p>
+    <p class="zh">以色列人對這些希未人說：「只怕你們是住在我們中間的，若是這樣，怎能和你們立約呢？」他們對約書亞說：「我們是你的僕人。」… 約書亞問他們說：「你們是什麼人？是從哪裡來的？」他們回答說：「僕人從極遠之地而來，是因聽見耶和華你神的名聲和他在埃及所行的一切事，並他向約旦河東的兩個亞摩利王，就是希實本王西宏和在亞斯他錄的巴珊王噩一切所行的事。」… 以色列人受了他們些食物，並沒有求問耶和華。於是約書亞與他們講和，與他們立約，容他們活著。會眾的首領也向他們起誓。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Matthew 4:6–7; Psalm 91:1 · 馬太福音 4:6–7；詩篇 91:1</p>
+    <p class="en">“If You are the Son of God, throw Yourself down. For it is written: ‘He shall give His angels charge over you,’ and, ‘In their hands they shall bear you up, lest you dash your foot against a stone.’ ” Jesus said to him, “It is written again, ‘You shall not tempt the Lord your God.’ ” “He who dwells in the secret place of the Most High shall abide under the shadow of the Almighty.”</p>
+    <p class="zh">「你若是神的兒子，可以跳下去！因為經上記著說：『主要為你吩咐他的使者用手托著你，免得你的腳碰在石頭上。』」耶穌對他說：「經上又記著說：『不可試探主你的神。』」… 住在至高者隱密處的，必住在全能者的蔭下。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:12–13 · 約書亞記 9:12–13</p>
+    <p class="en">“This bread of ours we took hot for our provision from our houses on the day we departed to come to you. But now look, it is dry and moldy. And these wineskins which we filled were new, and see, they are torn; and these our garments and our sandals have become old because of the very long journey.”</p>
+    <p class="zh">我們出來要往你們這裡來的日子，從家裡帶出來的這餅還是熱的，看哪，現在都乾了，長了霉了。這皮酒袋，我們盛酒的時候還是新的，看哪，現在已經破裂。我們這衣服和鞋，因為道路甚遠，也都穿舊了。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">2 Corinthians 4:18 · 哥林多後書 4:18</p>
+    <p class="en">…we do not look at the things which are seen, but at the things which are not seen. For the things which are seen are temporary, but the things which are not seen are eternal.</p>
+    <p class="zh">原來我們不是顧念所見的，乃是顧念所不見的，因為所見的是暫時的，所不見的是永遠的。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Jeremiah 17:5–8 · 耶利米書 17:5–8</p>
+    <p class="en">Thus says the Lord: “Cursed is the man who trusts in man and makes flesh his strength, whose heart departs from the Lord. For he shall be like a shrub in the desert, and shall not see when good comes, but shall inhabit the parched places in the wilderness, in a salt land which is not inhabited. “Blessed is the man who trusts in the Lord, and whose hope is the Lord. For he shall be like a tree planted by the waters… in the year of drought, nor will cease from yielding fruit.”</p>
+    <p class="zh">耶和華如此說：「倚靠人血肉的膀臂，心中離棄耶和華的，那人有禍了！因他必像沙漠的杜松，不見福樂來到，卻要住曠野乾旱之處，無人居住的鹼地。倚靠耶和華，以耶和華為可靠的，那人有福了！他必像樹栽於水旁，在河邊扎根。炎熱來到並不懼怕，葉子仍必青翠；在乾旱之年毫無掛慮，而且結果不止。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Proverbs 3:5–7 · 箴言 3:5–7</p>
+    <p class="en">Trust in the Lord with all your heart, and lean not on your own understanding; in all your ways acknowledge Him, and He shall direct your paths. Do not be wise in your own eyes; fear the Lord and depart from evil.</p>
+    <p class="zh">你要專心仰賴耶和華，不可倚靠自己的聰明；在你一切所行的事上都要認定他，他必指引你的路。不要自以為有智慧，要敬畏耶和華，遠離惡事。</p>
+  </div>
+
+  <h4>Do Something! Faith Is Not Enough 作點事情吧！單靠信心是不行的！</h4>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 14:23 · 羅馬書 14:23</p>
+    <p class="en">But he who doubts is condemned if he eats, because he does not eat from faith; for whatever is not from faith is sin.</p>
+    <p class="zh">若有疑心而吃的，就必有罪，因為他吃不是出於信心；凡不出於信心的都是罪。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:4–5 · 約書亞記 9:4–5</p>
+    <p class="en">They worked craftily, and went and pretended to be ambassadors. And they took old sacks on their donkeys, old wineskins torn and mended, old and patched sandals on their feet, and old garments on themselves; and all the bread of their provision was dry and moldy.</p>
+    <p class="zh">就設詭計，假充使者，拿舊口袋和破裂縫補的舊皮酒袋馱在驢上，將補過的舊鞋穿在腳上，把舊衣服穿在身上。他們所帶的餅都是乾的，長了霉了。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Isaiah 61:10 · 以賽亞書 61:10</p>
+    <p class="en">I will greatly rejoice in the Lord, my soul shall be joyful in my God; for He has clothed me with the garments of salvation, He has covered me with the robe of righteousness, as a bridegroom decks himself with ornaments, and as a bride adorns herself with her jewels.</p>
+    <p class="zh">我因耶和華大大歡喜，我的心靠神快樂。因他以拯救為衣給我穿上，以公義為袍給我披上，好像新郎戴上華冠，又像新婦佩戴裝飾。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 10:14–15, 17 · 羅馬書 10:14–15,17</p>
+    <p class="en">How then shall they call on Him in whom they have not believed? And how shall they believe in Him of whom they have not heard? And how shall they hear without a preacher? And how shall they preach unless they are sent? … So then faith comes by hearing, and hearing by the word of God.</p>
+    <p class="zh">然而，人未曾信他，怎能求他呢？未曾聽見他，怎能信他呢？沒有傳道的，怎能聽見呢？若沒有奉差遣，怎能傳道呢？… 可見信道是從聽道來的，聽道是從基督的話來的。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Matthew 15:21–28 · 馬太福音 15:21–28</p>
+    <p class="en">Then Jesus went out from there and departed to the region of Tyre and Sidon. And behold, a woman of Canaan came from that region and cried out to Him, saying, “Have mercy on me, O Lord, Son of David! My daughter is severely demon‑possessed.” But He answered her not a word… He answered and said, “I was not sent except to the lost sheep of the house of Israel.” Then she came and worshiped Him, saying, “Lord, help me!” But He answered and said, “It is not good to take the children’s bread and throw it to the little dogs.” And she said, “Yes, Lord, yet even the little dogs eat the crumbs which fall from their masters’ table.” Then Jesus answered and said to her, “O woman, great is your faith! Let it be to you as you desire.” And her daughter was healed from that very hour.</p>
+    <p class="zh">耶穌離開那裡，退到推羅、西頓的境內去。有一個迦南婦人，從那地方出來，喊著說：「主啊，大衛的子孫，可憐我！我女兒被鬼附得甚苦。」耶穌卻一言不答。門徒進前來求他，說：「這婦人在我們後頭喊叫，請打發她走吧！」耶穌說：「我奉差遣，不過是到以色列家迷失的羊那裡去。」那婦人來拜他，說：「主啊，幫助我！」他回答說：「不好拿兒女的餅丟給狗吃。」婦人說：「主啊，不錯，但是狗也吃牠主人桌子上掉下來的碎渣兒！」耶穌說：「婦人，你的信心是大的！照你所要的，給你成全了吧。」從那時候，她女兒就好了。</p>
+  </div>
+
+  <h3>My Notes – Lesson 2 我的筆記</h3>
+  <textarea data-note-id="lesson2"></textarea>
+</div>
+
+<div class="page" id="lesson3">
+  <h2>Lesson 3：From Deceivers to Woodcutters and Water Carriers<br>第三課：由欺騙者，變為劈柴挑水的人</h2>
+
+  <h3>From Deceivers to Covenanted People 從欺騙者到盟約下的子民</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:15 · 約書亞記 9:15</p>
+    <p class="en">So Joshua made peace with them, and made a covenant with them to let them live; and the rulers of the congregation swore to them.</p>
+    <p class="zh">於是約書亞與他們講和，與他們立約，容他們活著。會眾的首領也向他們起誓。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 11:20 · 約書亞記 11:20</p>
+    <p class="en">For it was of the Lord to harden their hearts, that they should come against Israel in battle, that He might utterly destroy them, and that they might receive no mercy, but that He might destroy them, as the Lord had commanded Moses.</p>
+    <p class="zh">因為耶和華的意思是要使他們心裡剛硬，來與以色列人爭戰，好叫他們盡被殺滅，不蒙憐憫，正如耶和華所吩咐摩西的。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Luke 18:13–14 · 路加福音 18:13–14</p>
+    <p class="en">And the tax collector, standing afar off, would not so much as raise his eyes to heaven, but beat his breast, saying, ‘God, be merciful to me a sinner!’ I tell you, this man went down to his house justified rather than the other; for everyone who exalts himself will be humbled, and he who humbles himself will be exalted.”</p>
+    <p class="zh">那稅吏遠遠地站著，連舉目望天也不敢，只捶著胸說：『神啊，開恩可憐我這個罪人！』我告訴你們，這人回家去比那人倒算為義了。因為凡自高的，必降為卑；自卑的，必升為高。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Ephesians 2:1–3 · 以弗所書 2:1–3</p>
+    <p class="en">And you He made alive, who were dead in trespasses and sins, in which you once walked according to the course of this world, according to the prince of the power of the air… among whom also we all once conducted ourselves in the lusts of our flesh… and were by nature children of wrath, just as the others.</p>
+    <p class="zh">你們死在過犯罪惡之中，他叫你們活過來。那時你們在其中行事為人，隨從今世的風俗，順服空中掌權者的首領，就是現今在悖逆之子心中運行的邪靈。我們從前也都在他們中間，放縱肉體的私慾，隨著肉體和心中所喜好的去行，本為可怒之子，和別人一樣。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:16–20 · 約書亞記 9:16–20</p>
+    <p class="en">And it happened at the end of three days, after they had made a covenant with them, that they heard that they were their neighbors who dwelt near them. Then the children of Israel journeyed and came to their cities on the third day. Now their cities were Gibeon, Chephirah, Beeroth, and Kirjath Jearim. But the children of Israel did not attack them, because the rulers of the congregation had sworn to them by the Lord God of Israel. And all the congregation complained against the rulers. Then all the rulers said to all the congregation, “We have sworn to them by the Lord God of Israel; now therefore, we may not touch them. This we will do to them: We will let them live, lest wrath be upon us because of the oath which we swore to them.”</p>
+    <p class="zh">以色列人與他們立約之後，過了三天才聽見他們是近鄰，住在以色列人中間的。以色列人起行，第三天到了他們的城邑，就是基遍、基非拉、比錄、基列耶琳。因為會眾的首領已經指著耶和華以色列的神向他們起誓，所以以色列人不擊殺他們。全會眾就向首領發怨言。眾首領對全會眾說：「我們已經指著耶和華以色列的神向他們起誓，現在我們不能害他們。我們要如此待他們，容他們活著，免得有憤怒因我們所起的誓臨到我們身上。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 14:4 · 羅馬書 14:4</p>
+    <p class="en">Who are you to judge another’s servant? To his own master he stands or falls. Indeed, he will be made to stand, for God is able to make him stand.</p>
+    <p class="zh">你是誰，竟論斷別人的僕人呢？他或站住，或跌倒，自有他的主人在；而且他也必要站住，因為主能使他站住。</p>
+  </div>
+
+  <h3>From Covenanted People to Woodcutters and Water Carriers 從盟約下的子民到劈柴挑水的人</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Deuteronomy 29:10–12 · 申命記 29:10–12</p>
+    <p class="en">All of you stand today before the Lord your God: your leaders and your tribes and your elders and your officers, all the men of Israel, your little ones and your wives—also the stranger who is in your camp, from the one who cuts your wood to the one who draws your water—that you may enter into covenant with the Lord your God, and into His oath, which the Lord your God makes with you today,</p>
+    <p class="zh">今日你們全都要站在耶和華—你們的神面前，就是各領袖、族長、長老、官長、以色列所有的男子、你們的妻子兒女、你營中寄居的，從為你砍柴到為你挑水的人，為要使你進入耶和華—你神的約，就是耶和華—你神今日向你起誓所立的。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:21–25 · 約書亞記 9:21–25</p>
+    <p class="en">And the rulers said to them, “Let them live, but let them be woodcutters and water carriers for all the congregation, as the rulers had promised them.” Then Joshua called for them, and he spoke to them, saying, “Why have you deceived us, saying, ‘We are very far from you,’ when you dwell near us? … So they answered Joshua and said, “Because your servants were clearly told that the Lord your God commanded His servant Moses to give you all the land, and to destroy all the inhabitants of the land from before you; therefore we were very much afraid for our lives because of you, and have done this thing. And now, here we are, in your hands; do with us as it seems good and right to do to us.”</p>
+    <p class="zh">首領又對會眾說：「要容他們活著。」於是他們為全會眾做了劈柴挑水的人，正如首領對他們所說的話。約書亞召了他們來，對他們說：「為什麼欺哄我們說我們離你們甚遠呢？其實你們是住在我們中間。… 他們回答約書亞說：「因為有人實在告訴你的僕人，耶和華你的神曾吩咐他的僕人摩西，把這全地賜給你們，並在你們面前滅絕這地的一切居民，所以我們為你們的緣故甚怕喪命，就行了這事。現在我們在你手中，你以怎樣待我們為善為正，就怎樣做吧！」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Genesis 3:9–11 · 創世記 3:9–11</p>
+    <p class="en">Then the Lord God called to Adam and said to him, “Where are you?” So he said, “I heard Your voice in the garden, and I was afraid because I was naked; and I hid myself.” And He said, “Who told you that you were naked? Have you eaten from the tree of which I commanded you that you should not eat?”</p>
+    <p class="zh">耶和華神呼喚那人，對他說：「你在哪裡？」他說：「我在園中聽見你的聲音，我就害怕，因為我赤身露體。我便藏了。」耶和華說：「誰告訴你赤身露體呢？莫非你吃了我吩咐你不可吃的那樹上的果子嗎？」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Romans 2:14–15 · 羅馬書 2:14–15</p>
+    <p class="en">For when Gentiles, who do not have the law, by nature do the things in the law, these, although not having the law, are a law to themselves, who show the work of the law written in their hearts, their conscience also bearing witness, and between themselves their thoughts accusing or else excusing them.</p>
+    <p class="zh">外族人沒有律法，但是他們依著本性，做合乎律法的事情，所以，儘管他們沒有律法，但是他們就是自己的律法。他們顯示出律法的要求是寫在他們心裡的。他們的良知也為此作證。他們的思想則時而譴責自己，時而為自己辯護。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Hebrews 10:2, 10, 14 · 希伯來書 10:2,10,14</p>
+    <p class="en">For then would they not have ceased to be offered? For the worshipers, once purified, would have had no more consciousness of sins. … By that will we have been sanctified through the offering of the body of Jesus Christ once for all. … For by one offering He has perfected forever those who are being sanctified.</p>
+    <p class="zh">若不然，獻祭的事豈不早已停止了嗎？因為敬拜的人僅只一次潔淨，良心就不再覺得有罪了。… 我們憑著這旨意，藉著耶穌基督，僅只一次獻上他的身體就得以成聖。… 因為他僅只一次獻祭，就使那些得以成聖的人永遠完全。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">1 John 4:17–18 · 約翰一書 4:17–18</p>
+    <p class="en">Love has been perfected among us in this: that we may have boldness in the day of judgment; because as He is, so are we in this world. There is no fear in love; but perfect love casts out fear, because fear involves torment. But he who fears has not been made perfect in love.</p>
+    <p class="zh">這樣，愛在我們裡面得以完全，我們就可以在審判的日子坦然無懼；因為他如何，我們在這世上也如何。愛裡沒有懼怕，愛既完全，就把懼怕除去，因為懼怕裡含著刑罰；懼怕的人在愛裡未得完全。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">1 Timothy 1:18–19 · 提摩太前書 1:18–19</p>
+    <p class="en">This charge I commit to you, son Timothy, according to the prophecies previously made concerning you, that by them you may wage the good warfare, having faith and a good conscience, which some having rejected, concerning the faith have suffered shipwreck.</p>
+    <p class="zh">我兒提摩太啊，我照從前指著你的預言，將這命令交託你，叫你因此可以打那美好的仗，常存信心和無虧的良心。有人丟棄良心，就在真道上如同船破壞了一般。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Numbers 19:9 · 民數記 19:9</p>
+    <p class="en">Then a man who is clean shall gather up the ashes of the heifer, and store them outside the camp in a clean place; and they shall be kept for the congregation of the children of Israel for the water of purification; it is for purifying from sin.</p>
+    <p class="zh">必有一個潔淨的人收起母牛的灰，存在營外潔淨的地方，為以色列會眾調做除污穢的水，這本是除罪的。</p>
+  </div>
+
+  <h3>From Woodcutters and Water Carriers to Servants for Others and for the Altar of the Lord<br>從劈柴挑水的人到服侍會眾和耶和華的壇的僕人</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:23, 27 · 約書亞記 9:23, 27</p>
+    <p class="en">“Now therefore, you are cursed, and none of you shall be freed from being slaves—woodcutters and water carriers for the house of my God.” … And that day Joshua made them woodcutters and water carriers for the congregation and for the altar of the Lord, in the place which He would choose, even to this day.</p>
+    <p class="zh">「現在你們是被咒詛的。你們中間的人必斷不了做奴僕，為我神的殿做劈柴挑水的人。」… 當日約書亞使他們在耶和華所要選擇的地方，為會眾和耶和華的壇做劈柴挑水的人，直到今日。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Psalm 84:10 · 詩篇 84:10</p>
+    <p class="en">For a day in Your courts is better than a thousand. I would rather be a doorkeeper in the house of my God than dwell in the tents of wickedness.</p>
+    <p class="zh">在你的院宇住一日，勝似在別處住千日。寧可在我神殿中看門，不願住在惡人的帳篷裡。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">2 Chronicles 2:10 · 歷代志下 2:10</p>
+    <p class="en">And indeed I will give to your servants, the woodsmen who cut timber, twenty thousand kors of ground wheat, twenty thousand kors of barley, twenty thousand baths of wine, and twenty thousand baths of oil.</p>
+    <p class="zh">你的僕人砍伐樹木，我必給他們打好了的小麥二萬歌珥，大麥二萬歌珥，酒二萬罷特，油二萬罷特。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Isaiah 12:3 · 以賽亞書 12:3</p>
+    <p class="en">Therefore with joy you will draw water from the wells of salvation.</p>
+    <p class="zh">所以你們必從救恩的泉源歡然取水。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Leviticus 6:9, 12–13 · 利未記 6:9,12–13</p>
+    <p class="en">“This is the law of the burnt offering: The burnt offering shall be on the hearth upon the altar all night until morning, and the fire of the altar shall be kept burning on it… And the fire on the altar shall be kept burning on it; it shall not be put out. And the priest shall burn wood on it every morning… A fire shall always be burning on the altar; it shall never go out.”</p>
+    <p class="zh">「你要吩咐亞倫和他的子孫說，燔祭的條例是這樣：燔祭要放在壇的底盤上，從晚上到天亮，壇上的火要不斷地燒著。… 壇上的火要不斷地燒著，不可熄滅。每日早晨，祭司要在壇上燒柴，把燔祭擺在壇上，並燒平安祭牲的脂肪。壇上的火要不斷地燒著，不可熄滅。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">Leviticus 1:8–9 · 利未記 1:8–9</p>
+    <p class="en">Then the priests, Aaron’s sons, shall lay the parts, the head, and the fat in order on the wood that is on the fire upon the altar; but he shall wash its entrails and its legs with water. And the priest shall burn all on the altar as a burnt sacrifice, an offering made by fire, a sweet aroma to the Lord.</p>
+    <p class="zh">亞倫子孫作祭司的要把肉塊連頭和脂肪，擺在壇上燒著火的柴上。燔祭牲的內臟與小腿要用水洗淨，祭司要把整隻全燒在壇上，當作燔祭，是獻給耶和華為馨香的火祭。</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">John 13:10 · 約翰福音 13:10</p>
+    <p class="en">Jesus said to him, “He who is bathed needs only to wash his feet, but is completely clean; and you are clean, but not all of you.”</p>
+    <p class="zh">耶穌說：「凡洗過澡的人，只要把腳一洗，全身就乾淨了。你們是乾淨的，然而不都是乾淨的。」</p>
+  </div>
+
+  <div class="bilingual">
+    <p class="verse-ref">1 Timothy 4:1–3 · 提摩太前書 4:1–3</p>
+    <p class="en">Now the Spirit expressly says that in latter times some will depart from the faith, giving heed to deceiving spirits and doctrines of demons, speaking lies in hypocrisy, having their own conscience seared with a hot iron, forbidding to marry, and commanding to abstain from foods which God created to be received with thanksgiving by those who believe and know the truth.</p>
+    <p class="zh">聖靈明說，在後來的時候，必有人離棄真道，聽從那引誘人的邪靈和鬼魔的道理。這是因為說謊之人的假冒，這等人的良心如同被熱鐵烙慣了一般。他們禁止嫁娶，又禁戒食物，就是神所造，叫那信而明白真道的人感謝著領受的。</p>
+  </div>
+
+  <h3>Conclusion: “Even to This Day” 結論：「直到今日」</h3>
+
+  <div class="bilingual">
+    <p class="verse-ref">Joshua 9:27 · 約書亞記 9:27</p>
+    <p class="en">And that day Joshua made them woodcutters and water carriers for the congregation and for the altar of the Lord, in the place which He would choose, even to this day.</p>
+    <p class="zh">當日約書亞使他們在耶和華所要選擇的地方，為會眾和耶和華的壇做劈柴挑水的人，直到今日。</p>
+  </div>
+
+  <h3>My Notes – Lesson 3 我的筆記</h3>
+  <textarea data-note-id="lesson3"></textarea>
+</div>
+
+<div class="page" id="activity">
+  <h2>Activity 活動問題</h2>
+
+  <h3>問題一 Question 1</h3>
+  <p>當我們聽見神的大能、身邊的見證時，有沒有仍帶著懷疑、對神的不信？試分享過去遇到困難時用了自己的方法處理而遭到失敗的經歷（例如在關係上、自我價值上、財務上、事奉上等等）。為何會對神帶有懷疑？</p>
+  <p>When you hear the testimonies of other people about God’s mighty power working in their lives, will you doubt the works of God? Can you share from your previous experience how you have used your own way to deal with some problems, and yet ended up in failure? (e.g. relationship, self-worth, finance, ministry…) What are the possible reasons that cause you to doubt God?</p>
+  <div class="note-lines">
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+  </div>
+
+  <h3>問題二 Question 2</h3>
+  <p>有沒有一些舊我仍在？願意交給神嗎？（鼓勵一起分享、彼此代禱）</p>
+  <p>Have you noticed any characteristics from your “old self” that still exist in you? Are you willing to submit them to God? (Let’s share and pray for each other)</p>
+  <div class="note-lines">
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+  </div>
+
+  <h3>問題三 Question 3</h3>
+  <p>有否一些「沒有求問神而失敗的經歷」？試分享那次經歷為何沒有求問神？</p>
+  <p>Have you previously experienced some kind of failure because you “did not ask counsel of the Lord”? In that incidence, why have you not asked of the Lord?</p>
+  <div class="note-lines">
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+__________________________________________________________________________
+  </div>
+
+  <h3>My Notes – Activity 我的筆記</h3>
+  <textarea data-note-id="activity"></textarea>
+</div>
+
+<div class="page" id="other">
+  <h2>F. OTHER MATERIALS 其他內容</h2>
+
+  <h3>Testimonies 見證 QR CODE</h3>
+  <p>請與我們分享一至兩件神於今次周年營會期間在您生命裏所作的事工，好讓我們可與您一同分享喜樂。謝謝！</p>
+  <p>Please share with us one or two specific things God has done in your life during this camp. We want to share to rejoice with you. Thank you!</p>
+  <p class="small">（請掃描營刊上的見證 QR Code 填寫表格。）</p>
+
+  <h3>Evaluation Form 意見表 QR CODE</h3>
+  <p>請與我們分享一下這次營會教導中，讓你感受最深刻的內容或題目，能幫助你更認識基督和得著基督。</p>
+  <p>Please share with us one or two specific points / topics in the teaching that impress you and you find useful in helping you to know Christ and to gain Christ.</p>
+  <p class="small">（請掃描營刊上的意見表 QR Code 填寫表格。）</p>
+</div>
+
+<!-- 浮動記事按鈕 -->
+<button class="floating-notes-btn" id="floatingNotesToggle" title="浮動記事">
+  ✎
+</button>
+
+<!-- 浮動記事視窗 -->
+<div class="floating-notes-panel" id="floatingNotesPanel">
+  <div class="floating-notes-header">
+    <span>臨場記事 / 祈禱</span>
+    <button class="floating-notes-close" id="floatingNotesClose">×</button>
+  </div>
+  <div class="floating-notes-body">
+    <textarea id="floatingNotesTextarea" placeholder="這裡可以寫下即時感動、祈禱、回應…"></textarea>
+  </div>
+</div>
+
+<!-- 浮動經文對照按鈕 -->
+<button class="floating-scripture-btn" id="floatingScriptureToggle" title="經文對照">
+  ¶
+</button>
+
+<!-- 浮動經文對照視窗 -->
+<div class="floating-scripture-panel" id="floatingScripturePanel">
+  <div class="floating-scripture-header">
+    <span>經文對照 / 要點</span>
+    <button class="floating-scripture-close" id="floatingScriptureClose">×</button>
+  </div>
+  <div class="floating-scripture-body">
+    <div class="hint">可貼上講員引用的經文，或自己整理的對照：</div>
+    <textarea id="floatingScriptureTextarea" placeholder="例：&#10;約書亞記 9:14  vs  箴言 3:5–7&#10;── 沒有求問耶和華 vs 專心仰賴耶和華"></textarea>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY_NOTES = 'camp2026_notes';
+  const STORAGE_KEY_HL = 'camp2026_highlights_v2';
+  const STORAGE_KEY_FLOATING = 'camp2026_floating_notes';
+  const STORAGE_KEY_SCRIPTURE = 'camp2026_floating_scripture';
+
+  function initNotes() {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_NOTES) || '{}');
+    document.querySelectorAll('[data-note-id]').forEach(area => {
+      const id = area.getAttribute('data-note-id');
+      if (saved[id]) area.value = saved[id];
+      area.addEventListener('input', () => {
+        saved[id] = area.value;
+        localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(saved));
+      });
+    });
+  }
+
+  function wrapSelectionWithMark(color) {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const span = document.createElement('mark');
+    span.style.backgroundColor = color;
+    span.style.padding = '0 1px';
+    span.classList.add('user-highlight');
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      return;
+    }
+    sel.removeAllRanges();
+    saveHighlights();
+  }
+
+  function saveHighlights() {
+    const pages = document.querySelectorAll('.page');
+    const htmlArr = Array.from(pages).map(p => p.innerHTML);
+    localStorage.setItem(STORAGE_KEY_HL, JSON.stringify(htmlArr));
+  }
+
+  function restoreHighlights() {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_HL) || 'null');
+    if (!saved) return;
+    const pages = document.querySelectorAll('.page');
+    saved.forEach((html, idx) => {
+      if (pages[idx]) pages[idx].innerHTML = html;
+    });
+  }
+
+  function initHighlightPalette() {
+    const mainBtn = document.createElement('button');
+    mainBtn.id = 'hl-main-btn';
+    mainBtn.textContent = '筆記';
+    Object.assign(mainBtn.style, {
+      position: 'fixed',
+      bottom: '16px',
+      right: '16px',
+      zIndex: 9999,
+      padding: '8px 12px',
+      borderRadius: '999px',
+      border: 'none',
+      background: '#ff9800',
+      color: '#fff',
+      fontSize: '13px',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+      display: 'none'
+    });
+    document.body.appendChild(mainBtn);
+
+    const palette = document.createElement('div');
+    palette.id = 'hl-palette';
+    Object.assign(palette.style, {
+      position: 'fixed',
+      bottom: '60px',
+      right: '16px',
+      zIndex: 10000,
+      padding: '6px 8px',
+      borderRadius: '12px',
+      background: 'rgba(255,248,225,0.96)',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
+      display: 'none',
+      fontSize: '12px'
+    });
+
+    palette.innerHTML = `
+      <div style="margin-bottom:4px;color:#5d4037;">Highlight 顏色：</div>
+      <div style="display:flex;gap:6px;margin-bottom:4px;">
+        <button data-color="#fff176" style="width:20px;height:20px;border-radius:50%;border:1px solid #fbc02d;background:#fff176;"></button>
+        <button data-color="#ffd54f" style="width:20px;height:20px;border-radius:50%;border:1px solid #ffca28;background:#ffd54f;"></button>
+        <button data-color="#c5e1a5" style="width:20px;height:20px;border-radius:50%;border:1px solid #9ccc65;background:#c5e1a5;"></button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:6px;">
+        <button id="hl-cancel" style="border:none;background:transparent;color:#795548;">取消</button>
+        <button id="hl-apply" style="border:none;background:#ffb300;color:#fff;border-radius:999px;padding:2px 10px;font-size:11px;">套用</button>
+      </div>
+    `;
+    document.body.appendChild(palette);
+
+    let currentColor = '#fff176';
+    let hasSelection = false;
+
+    palette.querySelectorAll('button[data-color]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentColor = btn.getAttribute('data-color');
+      });
+    });
+
+    palette.querySelector('#hl-cancel').addEventListener('click', () => {
+      palette.style.display = 'none';
+    });
+
+    palette.querySelector('#hl-apply').addEventListener('click', () => {
+      wrapSelectionWithMark(currentColor);
+      palette.style.display = 'none';
+      mainBtn.style.display = 'none';
+    });
+
+    mainBtn.addEventListener('click', () => {
+      if (!hasSelection) return;
+      palette.style.display = 'block';
+    });
+
+    document.addEventListener('selectionchange', () => {
+      const sel = window.getSelection();
+      const active = sel && !sel.isCollapsed && String(sel).trim().length > 0;
+      hasSelection = active;
+      mainBtn.style.display = active ? 'block' : 'none';
+      if (!active) palette.style.display = 'none';
+    });
+  }
+
+  function initResetButton() {
+    const btn = document.createElement('button');
+    btn.textContent = '重置筆記 / Highlight';
+    Object.assign(btn.style, {
+      position: 'fixed',
+      bottom: '16px',
+      left: '16px',
+      zIndex: 9999,
+      padding: '6px 10px',
+      borderRadius: '999px',
+      border: '1px solid rgba(255,255,255,0.8)',
+      background: 'rgba(0,0,0,0.38)',
+      color: '#fff',
+      fontSize: '11px',
+      backdropFilter: 'blur(4px)'
+    });
+    btn.addEventListener('click', () => {
+      if (!confirm('確定要清除本機所有營會筆記、highlight 及浮動視窗內容？')) return;
+      localStorage.removeItem(STORAGE_KEY_NOTES);
+      localStorage.removeItem(STORAGE_KEY_HL);
+      localStorage.removeItem(STORAGE_KEY_FLOATING);
+      localStorage.removeItem(STORAGE_KEY_SCRIPTURE);
+      location.reload();
+    });
+    document.body.appendChild(btn);
+  }
+
+  function initTopNavActive() {
+    const links = document.querySelectorAll('.top-nav a[href^="#"]');
+    const sections = [...links].map(a => {
+      const id = a.getAttribute('href').substring(1);
+      return { id, el: document.getElementById(id), link: a };
+    });
+
+    const onScroll = () => {
+      const pos = window.scrollY + 100;
+      let current = sections[0];
+      sections.forEach(s => {
+        if (s.el && s.el.offsetTop <= pos) current = s;
+      });
+      links.forEach(l => l.classList.remove('active'));
+      if (current && current.link) current.link.classList.add('active');
+    };
+
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+  }
+
+  function initFloatingNotes() {
+    const btn = document.getElementById('floatingNotesToggle');
+    const panel = document.getElementById('floatingNotesPanel');
+    const closeBtn = document.getElementById('floatingNotesClose');
+    const area = document.getElementById('floatingNotesTextarea');
+
+    if (!btn || !panel || !area) return;
+
+    const saved = localStorage.getItem(STORAGE_KEY_FLOATING);
+    if (saved !== null) area.value = saved;
+
+    const toggle = () => {
+      panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    };
+
+    btn.addEventListener('click', toggle);
+    closeBtn.addEventListener('click', () => {
+      panel.style.display = 'none';
+    });
+
+    area.addEventListener('input', () => {
+      localStorage.setItem(STORAGE_KEY_FLOATING, area.value);
+    });
+  }
+
+  function initFloatingScripture() {
+    const btn = document.getElementById('floatingScriptureToggle');
+    const panel = document.getElementById('floatingScripturePanel');
+    const closeBtn = document.getElementById('floatingScriptureClose');
+    const area = document.getElementById('floatingScriptureTextarea');
+
+    if (!btn || !panel || !area) return;
+
+    const saved = localStorage.getItem(STORAGE_KEY_SCRIPTURE);
+    if (saved !== null) area.value = saved;
+
+    const toggle = () => {
+      panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    };
+
+    btn.addEventListener('click', toggle);
+    closeBtn.addEventListener('click', () => {
+      panel.style.display = 'none';
+    });
+
+    area.addEventListener('input', () => {
+      localStorage.setItem(STORAGE_KEY_SCRIPTURE, area.value);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    restoreHighlights();
+    initNotes();
+    initHighlightPalette();
+    initResetButton();
+    initTopNavActive();
+    initFloatingNotes();
+    initFloatingScripture();
+  });
+</script>
+
+</body>
+</html>
